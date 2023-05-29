@@ -7,7 +7,7 @@ from toolbox import clear_line_break
 
 def get_core_functions():
     return {
-        "英语学术润色": {
+        "英語學術潤色": {
             # 前言
             "Prefix":   r"Below is a paragraph from an academic paper. Polish the writing to meet the academic style, " +
                         r"improve the spelling, grammar, clarity, concision and overall readability. When necessary, rewrite the whole sentence. " +
@@ -16,12 +16,12 @@ def get_core_functions():
             "Suffix":   r"",
             "Color":    r"secondary",    # 按钮颜色
         },
-        "中文学术润色": {
+        "中文學術潤色": {
             "Prefix":   r"作為一名中文學術論文寫作改進助理，你的任務是改進所提供文本的拼寫、語法、清晰、簡潔和整體可讀性，" +
                         r"同時分解長句，減少重複，並提供改進建議。請只提供文本的更正版本，避免包括解釋。請編輯以下文本" + "\n\n",
             "Suffix":   r"",
         },
-        "查找语法错误": {
+        "查找語法錯誤": {
             "Prefix":   r"Can you help me ensure that the grammar and the spelling is correct? " +
                         r"Do not try to polish the text, if no mistake is found, tell me that this paragraph is good." +
                         r"If you find grammar or spelling mistakes, please list mistakes you find in a two-column markdown table, " +
@@ -39,11 +39,11 @@ def get_core_functions():
             "Suffix":   r"",
             "PreProcess": clear_line_break,    # 预处理：清除换行符
         },
-        "中译英": {
+        "中譯英": {
             "Prefix":   r"Please translate following sentence to English:" + "\n\n",
             "Suffix":   r"",
         },
-        "学术中英互译": {
+        "學術中英互譯": {
             "Prefix":   r"I want you to act as a scientific English-Chinese translator, " +
                         r"I will provide you with some paragraphs in one language " +
                         r"and your task is to accurately and academically translate the paragraphs only into the other language. " +
@@ -55,20 +55,20 @@ def get_core_functions():
             "Suffix": "",
             "Color": "secondary",
         },
-        "英译中": {
+        "英譯中": {
             "Prefix":   r"翻譯成地道的中文：" + "\n\n",
             "Suffix":   r"",
         },
-        "找图片": {
+        "找圖片": {
             "Prefix":   r"我需要你找一張網絡圖片。使用Unsplash API(https://source.unsplash.com/960x640/?<英語關鍵詞>)獲取圖片URL，" +
                         r"然後請使用Markdown格式封裝，並且不要有反斜線，不要用代碼塊。現在，請按以下描述給我發送圖片：" + "\n\n",
             "Suffix":   r"",
         },
-        "解释代码": {
+        "解釋代碼": {
             "Prefix":   r"請解釋以下代碼：" + "\n```\n",
             "Suffix":   "\n```\n",
         },
-        "参考文献转Bib": {
+        "參考文獻轉Bib": {
             "Prefix":   r"Here are some bibliography items, please transform them into bibtex style." +
                         r"Note that, reference styles maybe more than one kind, you should transform each item correctly." +
                         r"Items need to be transformed:",
