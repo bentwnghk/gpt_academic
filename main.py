@@ -57,11 +57,11 @@ def main():
         cookies = gr.State({'api_key': API_KEY, 'llm_model': LLM_MODEL})
         with gr_L1():
             with gr_L2(scale=2):
-                chatbot = gr.Chatbot(label=f"当前模型：{LLM_MODEL}")
+                chatbot = gr.Chatbot(label=f"當前模型：{LLM_MODEL}")
                 chatbot.style(height=CHATBOT_HEIGHT)
                 history = gr.State([])
             with gr_L2(scale=1):
-                with gr.Accordion("输入区", open=True) as area_input_primary:
+                with gr.Accordion("輸入區", open=True) as area_input_primary:
                     with gr.Row():
                         txt = gr.Textbox(show_label=False, placeholder="Input question here.").style(container=False)
                     with gr.Row():
@@ -71,16 +71,16 @@ def main():
                         stopBtn = gr.Button("停止", variant="secondary"); stopBtn.style(size="sm")
                         clearBtn = gr.Button("清除", variant="secondary", visible=False); clearBtn.style(size="sm")
                     with gr.Row():
-                        status = gr.Markdown(f"Tip: 按Enter提交, 按Shift+Enter换行。当前模型: {LLM_MODEL} \n {proxy_info}")
-                with gr.Accordion("基础功能区", open=True) as area_basic_fn:
+                        status = gr.Markdown(f"Tip: 按Enter提交，按Shift+Enter換行。當前模型: {LLM_MODEL} \n {proxy_info}")
+                with gr.Accordion("基礎功能區", open=True) as area_basic_fn:
                     with gr.Row():
                         for k in functional:
                             if ("Visible" in functional[k]) and (not functional[k]["Visible"]): continue
                             variant = functional[k]["Color"] if "Color" in functional[k] else "secondary"
                             functional[k]["Button"] = gr.Button(k, variant=variant)
-                with gr.Accordion("函数插件区", open=True) as area_crazy_fn:
+                with gr.Accordion("函數插件區", open=True) as area_crazy_fn:
                     with gr.Row():
-                        gr.Markdown("注意：以下“红颜色”标识的函数插件需从输入区读取路径作为参数.")
+                        gr.Markdown("注意：以下紅色標識的函數插件需從輸入區讀取路徑作為參數")
                     with gr.Row():
                         for k in crazy_fns:
                             if not crazy_fns[k].get("AsButton", True): continue
@@ -88,30 +88,30 @@ def main():
                             crazy_fns[k]["Button"] = gr.Button(k, variant=variant)
                             crazy_fns[k]["Button"].style(size="sm")
                     with gr.Row():
-                        with gr.Accordion("更多函数插件", open=True):
+                        with gr.Accordion("更多函數插件", open=True):
                             dropdown_fn_list = [k for k in crazy_fns.keys() if not crazy_fns[k].get("AsButton", True)]
                             with gr.Row():
-                                dropdown = gr.Dropdown(dropdown_fn_list, value=r"打开插件列表", label="").style(container=False)
+                                dropdown = gr.Dropdown(dropdown_fn_list, value=r"打開插件列表", label="").style(container=False)
                             with gr.Row():
-                                plugin_advanced_arg = gr.Textbox(show_label=True, label="高级参数输入区", visible=False, 
-                                                                 placeholder="这里是特殊函数插件的高级参数输入区").style(container=False)
+                                plugin_advanced_arg = gr.Textbox(show_label=True, label="高級參數輸入區", visible=False, 
+                                                                 placeholder="這裡是特殊函數插件的高級參數輸入區").style(container=False)
                             with gr.Row():
-                                switchy_bt = gr.Button(r"请先从插件列表中选择", variant="secondary")
+                                switchy_bt = gr.Button(r"請先從插件列表中選擇", variant="secondary")
                     with gr.Row():
-                        with gr.Accordion("点击展开“文件上传区”。上传本地文件可供红色函数插件调用。", open=False) as area_file_up:
-                            file_upload = gr.Files(label="任何文件, 但推荐上传压缩文件(zip, tar)", file_count="multiple")
-                with gr.Accordion("更换模型 & SysPrompt & 交互界面布局", open=(LAYOUT == "TOP-DOWN")):
+                        with gr.Accordion("點擊展開“文件上傳區”。上傳本地文件可供紅色函數插件調用。", open=False) as area_file_up:
+                            file_upload = gr.Files(label="任何文件，但推薦上傳壓縮文件(zip, tar)", file_count="multiple")
+                with gr.Accordion("更換模型 & SysPrompt & 交互界面佈局", open=(LAYOUT == "TOP-DOWN")):
                     system_prompt = gr.Textbox(show_label=True, placeholder=f"System Prompt", label="System prompt", value=initial_prompt)
                     top_p = gr.Slider(minimum=-0, maximum=1.0, value=1.0, step=0.01,interactive=True, label="Top-p (nucleus sampling)",)
                     temperature = gr.Slider(minimum=-0, maximum=2.0, value=1.0, step=0.01, interactive=True, label="Temperature",)
                     max_length_sl = gr.Slider(minimum=256, maximum=4096, value=512, step=1, interactive=True, label="Local LLM MaxLength",)
-                    checkboxes = gr.CheckboxGroup(["基础功能区", "函数插件区", "底部输入区", "输入清除键", "插件参数区"], value=["基础功能区", "函数插件区"], label="显示/隐藏功能区")
-                    md_dropdown = gr.Dropdown(AVAIL_LLM_MODELS, value=LLM_MODEL, label="更换LLM模型/请求源").style(container=False)
+                    checkboxes = gr.CheckboxGroup(["基礎功能區", "函數插件區", "底部輸入區", "輸入清除鍵", "插件參數區"], value=["基礎功能區", "函數插件區"], label="顯示/隱藏功能區")
+                    md_dropdown = gr.Dropdown(AVAIL_LLM_MODELS, value=LLM_MODEL, label="更換LLM模型/請求源").style(container=False)
 
                     gr.Markdown(description)
-                with gr.Accordion("备选输入区", open=True, visible=False) as area_input_secondary:
+                with gr.Accordion("備選輸入區", open=True, visible=False) as area_input_secondary:
                     with gr.Row():
-                        txt2 = gr.Textbox(show_label=False, placeholder="Input question here.", label="输入区2").style(container=False)
+                        txt2 = gr.Textbox(show_label=False, placeholder="Input question here.", label="輸入區2").style(container=False)
                     with gr.Row():
                         submitBtn2 = gr.Button("提交", variant="primary")
                     with gr.Row():
@@ -121,14 +121,14 @@ def main():
         # 功能区显示开关与功能区的互动
         def fn_area_visibility(a):
             ret = {}
-            ret.update({area_basic_fn: gr.update(visible=("基础功能区" in a))})
-            ret.update({area_crazy_fn: gr.update(visible=("函数插件区" in a))})
-            ret.update({area_input_primary: gr.update(visible=("底部输入区" not in a))})
-            ret.update({area_input_secondary: gr.update(visible=("底部输入区" in a))})
-            ret.update({clearBtn: gr.update(visible=("输入清除键" in a))})
-            ret.update({clearBtn2: gr.update(visible=("输入清除键" in a))})
-            ret.update({plugin_advanced_arg: gr.update(visible=("插件参数区" in a))})
-            if "底部输入区" in a: ret.update({txt: gr.update(value="")})
+            ret.update({area_basic_fn: gr.update(visible=("基礎功能區" in a))})
+            ret.update({area_crazy_fn: gr.update(visible=("函數插件區" in a))})
+            ret.update({area_input_primary: gr.update(visible=("底部輸入區" not in a))})
+            ret.update({area_input_secondary: gr.update(visible=("底部輸入區" in a))})
+            ret.update({clearBtn: gr.update(visible=("輸入清除鍵" in a))})
+            ret.update({clearBtn2: gr.update(visible=("輸入清除鍵" in a))})
+            ret.update({plugin_advanced_arg: gr.update(visible=("插件參數區" in a))})
+            if "底部輸入區" in a: ret.update({txt: gr.update(value="")})
             return ret
         checkboxes.select(fn_area_visibility, [checkboxes], [area_basic_fn, area_crazy_fn, area_input_primary, area_input_secondary, txt, txt2, clearBtn, clearBtn2, plugin_advanced_arg] )
         # 整理反复出现的控件句柄组合
@@ -162,17 +162,17 @@ def main():
             variant = crazy_fns[k]["Color"] if "Color" in crazy_fns[k] else "secondary"
             ret = {switchy_bt: gr.update(value=k, variant=variant)}
             if crazy_fns[k].get("AdvancedArgs", False): # 是否唤起高级插件参数区
-                ret.update({plugin_advanced_arg: gr.update(visible=True,  label=f"插件[{k}]的高级参数说明：" + crazy_fns[k].get("ArgsReminder", [f"没有提供高级参数功能说明"]))})
+                ret.update({plugin_advanced_arg: gr.update(visible=True,  label=f"插件[{k}]的高級參數說明：" + crazy_fns[k].get("ArgsReminder", [f"沒有提供高級參數功能說明"]))})
             else:
-                ret.update({plugin_advanced_arg: gr.update(visible=False, label=f"插件[{k}]不需要高级参数。")})
+                ret.update({plugin_advanced_arg: gr.update(visible=False, label=f"插件[{k}]不需要高級參數。")})
             return ret
         dropdown.select(on_dropdown_changed, [dropdown], [switchy_bt, plugin_advanced_arg] )
         def on_md_dropdown_changed(k):
-            return {chatbot: gr.update(label="当前模型："+k)}
+            return {chatbot: gr.update(label="當前模型："+k)}
         md_dropdown.select(on_md_dropdown_changed, [md_dropdown], [chatbot] )
         # 随变按钮的回调函数注册
         def route(k, *args, **kwargs):
-            if k in [r"打开插件列表", r"请先从插件列表中选择"]: return
+            if k in [r"打開插件列表", r"請先從插件列表中選擇"]: return
             yield from ArgsGeneralWrapper(crazy_fns[k]["Function"])(*args, **kwargs)
         click_handle = switchy_bt.click(route,[switchy_bt, *input_combo, gr.State(PORT)], output_combo)
         click_handle.then(on_report_generated, [file_upload, chatbot], [file_upload, chatbot])
