@@ -15,8 +15,8 @@ def main():
 
     from check_proxy import get_current_version
     initial_prompt = "Serve me as a writing and programming assistant."
-    title_html = f"<h1 align=\"center\">ChatGPT 学术优化 {get_current_version()}</h1>"
-    description =  """代码开源和更新[地址🚀](https://github.com/binary-husky/chatgpt_academic)，感谢热情的[开发者们❤️](https://github.com/binary-husky/chatgpt_academic/graphs/contributors)"""
+    title_html = f"<h1 align=\"center\">ChatGPT 學術優化 {get_current_version()}</h1>"
+    description =  """代碼開源和更新[地址](https://github.com/bentwnghk/chatgpt_academic)🚀"""
 
     # 问询记录, python 版本建议3.9+（越新越好）
     import logging
@@ -52,7 +52,7 @@ def main():
         CHATBOT_HEIGHT /= 2
 
     cancel_handles = []
-    with gr.Blocks(title="ChatGPT 学术优化", theme=set_theme, analytics_enabled=False, css=advanced_css) as demo:
+    with gr.Blocks(title="ChatGPT 學術優化", theme=set_theme, analytics_enabled=False, css=advanced_css) as demo:
         gr.HTML(title_html)
         cookies = gr.State({'api_key': API_KEY, 'llm_model': LLM_MODEL})
         with gr_L1():
