@@ -5,7 +5,7 @@ https://github.com/acheong08/EdgeGPT
 ========================================================================
 """
 from .edge_gpt_free import Chatbot as NewbingChatbot
-load_message = "等待NewBing响应。"
+load_message = "等待NewBing響應。"
 
 """
 ========================================================================
@@ -143,7 +143,7 @@ class NewBingHandle(Process):
             asyncio.run(self.async_run())
         except Exception:
             tb_str = '\n```\n' + trimmed_format_exc() + '\n```\n'
-            self.child.send(f'[Local Message] Newbing失败 {tb_str}.')
+            self.child.send(f'[Local Message] Newbing失敗 {tb_str}.')
             self.child.send('[Fail]')
             self.child.send('[Finish]')
         
@@ -194,7 +194,7 @@ def predict_no_ui_long_connection(inputs, llm_kwargs, history=[], sys_prompt="",
 
     watch_dog_patience = 5 # 看门狗 (watchdog) 的耐心, 设置5秒即可
     response = ""
-    if len(observe_window) >= 1: observe_window[0] = "[Local Message]: 等待NewBing响应中 ..."
+    if len(observe_window) >= 1: observe_window[0] = "[Local Message]: 等待NewBing響應中 ..."
     for response in newbingfree_handle.stream_chat(query=inputs, history=history_feedin, system_prompt=sys_prompt, max_length=llm_kwargs['max_length'], top_p=llm_kwargs['top_p'], temperature=llm_kwargs['temperature']):
         if len(observe_window) >= 1:  observe_window[0] = preprocess_newbing_out_simple(response)
         if len(observe_window) >= 2:  
@@ -207,7 +207,7 @@ def predict(inputs, llm_kwargs, plugin_kwargs, chatbot, history=[], system_promp
         单线程方法
         函数的说明请见 request_llm/bridge_all.py
     """
-    chatbot.append((inputs, "[Local Message]: 等待NewBing响应中 ..."))
+    chatbot.append((inputs, "[Local Message]: 等待NewBing響應中 ..."))
 
     global newbingfree_handle
     if (newbingfree_handle is None) or (not newbingfree_handle.success):
@@ -229,15 +229,15 @@ def predict(inputs, llm_kwargs, plugin_kwargs, chatbot, history=[], system_promp
     for i in range(len(history)//2):
         history_feedin.append([history[2*i], history[2*i+1]] )
 
-    chatbot[-1] = (inputs, "[Local Message]: 等待NewBing响应中 ...")
-    response = "[Local Message]: 等待NewBing响应中 ..."
-    yield from update_ui(chatbot=chatbot, history=history, msg="NewBing响应缓慢，尚未完成全部响应，请耐心完成后再提交新问题。")
+    chatbot[-1] = (inputs, "[Local Message]: 等待NewBing響應中 ...")
+    response = "[Local Message]: 等待NewBing響應中 ..."
+    yield from update_ui(chatbot=chatbot, history=history, msg="NewBing響應緩慢，尚未完成全部響應，請耐心完成後再提交新問題。")
     for response in newbingfree_handle.stream_chat(query=inputs, history=history_feedin, system_prompt=system_prompt, max_length=llm_kwargs['max_length'], top_p=llm_kwargs['top_p'], temperature=llm_kwargs['temperature']):
         chatbot[-1] = (inputs, preprocess_newbing_out(response))
-        yield from update_ui(chatbot=chatbot, history=history, msg="NewBing响应缓慢，尚未完成全部响应，请耐心完成后再提交新问题。")
-    if response == "[Local Message]: 等待NewBing响应中 ...": response = "[Local Message]: NewBing响应异常，请刷新界面重试 ..."
+        yield from update_ui(chatbot=chatbot, history=history, msg="NewBing響應緩慢，尚未完成全部響應，請耐心完成後再提交新問題。")
+    if response == "[Local Message]: 等待NewBing響應中 ...": response = "[Local Message]: NewBing響應異常，請刷新界面重試 ..."
     history.extend([inputs, response])
     logging.info(f'[raw_input] {inputs}')
     logging.info(f'[response] {response}')
-    yield from update_ui(chatbot=chatbot, history=history, msg="完成全部响应，请提交新问题。")
+    yield from update_ui(chatbot=chatbot, history=history, msg="完成全部響應，請提交新問題。")
 
