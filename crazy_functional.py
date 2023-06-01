@@ -152,11 +152,11 @@ def get_crazy_functions():
             # HotReload 的意思是热更新，修改函数插件代码后，不需要重启程序，代码直接生效
             "Function": HotReload(批量总结PDF文档)
         },
-        "[測試功能] 批量總結PDF文檔pdfminer": {
-            "Color": "stop",
-            "AsButton": False,  # 加入下拉菜单中
-            "Function": HotReload(批量总结PDF文档pdfminer)
-        },
+        # "[測試功能] 批量總結PDF文檔pdfminer": {
+        #    "Color": "stop",
+        #    "AsButton": False,  # 加入下拉菜单中
+        #    "Function": HotReload(批量总结PDF文档pdfminer)
+        # },
         "谷歌學術檢索助手（輸入谷歌學術搜索頁url）": {
             "Color": "stop",
             "AsButton": False,  # 加入下拉菜单中
