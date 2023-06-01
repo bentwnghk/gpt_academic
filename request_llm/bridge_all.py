@@ -34,9 +34,9 @@ class LazyloadTiktoken(object):
     @staticmethod
     @lru_cache(maxsize=128)
     def get_encoder(model):
-        print('正在加载tokenizer，如果是第一次运行，可能需要一点时间下载参数')
+        print('正在加載tokenizer，如果是第一次運行，可能需要一點時間下載參數')
         tmp = tiktoken.encoding_for_model(model)
-        print('加载tokenizer完毕')
+        print('加載tokenizer完畢')
         return tmp
     
     def encode(self, *args, **kwargs):
@@ -57,7 +57,7 @@ try:
     API_URL, = get_conf("API_URL")
     if API_URL != "https://api.openai.com/v1/chat/completions": 
         openai_endpoint = API_URL
-        print("警告！API_URL配置选项将被弃用，请更换为API_URL_REDIRECT配置")
+        print("警告！ API_URL配置選項將被棄用，請更換為API_URL_REDIRECT配置")
 except:
     pass
 # 新版配置
@@ -252,7 +252,7 @@ def predict_no_ui_long_connection(inputs, llm_kwargs, history, sys_prompt, obser
     model = llm_kwargs['llm_model']
     n_model = 1
     if '&' not in model:
-        assert not model.startswith("tgui"), "TGUI不支持函数插件的实现"
+        assert not model.startswith("tgui"), "TGUI不支持函數插件的實現"
 
         # 如果只询问1个大语言模型：
         method = model_info[model]["fn_without_ui"]
@@ -286,7 +286,7 @@ def predict_no_ui_long_connection(inputs, llm_kwargs, history, sys_prompt, obser
                 # 观察窗（window）
                 chat_string = []
                 for i in range(n_model):
-                    chat_string.append( f"【{str(models[i])} 说】: <font color=\"{colors[i]}\"> {window_mutex[i][0]} </font>" )
+                    chat_string.append( f"【{str(models[i])} 說】: <font color=\"{colors[i]}\"> {window_mutex[i][0]} </font>" )
                 res = '<br/><br/>\n\n---\n\n'.join(chat_string)
                 # # # # # # # # # # #
                 observe_window[0] = res
@@ -303,7 +303,7 @@ def predict_no_ui_long_connection(inputs, llm_kwargs, history, sys_prompt, obser
             time.sleep(1)
 
         for i, future in enumerate(futures):  # wait and get
-            return_string_collect.append( f"【{str(models[i])} 说】: <font color=\"{colors[i]}\"> {future.result()} </font>" )
+            return_string_collect.append( f"【{str(models[i])} 說】: <font color=\"{colors[i]}\"> {future.result()} </font>" )
 
         window_mutex[-1] = False # stop mutex thread
         res = '<br/><br/>\n\n---\n\n'.join(return_string_collect)

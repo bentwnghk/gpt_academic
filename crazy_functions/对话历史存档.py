@@ -9,11 +9,11 @@ def write_chat_to_file(chatbot, history=None, file_name=None):
     import os
     import time
     if file_name is None:
-        file_name = 'chatGPT对话历史' + time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()) + '.html'
+        file_name = 'ChatGPT對話歷史' + time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()) + '.html'
     os.makedirs('./gpt_log/', exist_ok=True)
     with open(f'./gpt_log/{file_name}', 'w', encoding='utf8') as f:
         from theme import advanced_css
-        f.write(f'<!DOCTYPE html><head><meta charset="utf-8"><title>对话历史</title><style>{advanced_css}</style></head>')
+        f.write(f'<!DOCTYPE html><head><meta charset="utf-8"><title>對話歷史</title><style>{advanced_css}</style></head>')
         for i, contents in enumerate(chatbot):
             for j, content in enumerate(contents):
                 try:    # 这个bug没找到触发条件，暂时先这样顶一下
@@ -29,7 +29,7 @@ def write_chat_to_file(chatbot, history=None, file_name=None):
         for h in history:
             f.write("\n>>>" + h)
         f.write('</code>')
-    res = '对话历史写入：' + os.path.abspath(f'./gpt_log/{file_name}')
+    res = '對話歷史寫入：' + os.path.abspath(f'./gpt_log/{file_name}')
     print(res)
     return res
 
@@ -65,7 +65,7 @@ def read_file_to_chat(chatbot, history, file_name):
     for i, h in enumerate(html):
         i_say, gpt_say = h.split('<hr style="border-top: dotted 3px #ccc;">')
         chatbot.append([i_say, gpt_say])
-    chatbot.append([f"存档文件详情？", f"[Local Message] 载入对话{len(html)}条，上下文{len(history)}条。"])
+    chatbot.append([f"存檔文件詳情？", f"[Local Message] 載入對話{len(html)}條，上下文{len(history)}條。"])
     return chatbot, history    
 
 @CatchException
@@ -80,8 +80,8 @@ def 对话历史存档(txt, llm_kwargs, plugin_kwargs, chatbot, history, system_
     web_port        当前软件运行的端口号
     """
 
-    chatbot.append(("保存当前对话", 
-        f"[Local Message] {write_chat_to_file(chatbot, history)}，您可以调用“载入对话历史存档”还原当下的对话。\n警告！被保存的对话历史可以被使用该系统的任何人查阅。"))
+    chatbot.append(("保存當前對話", 
+        f"[Local Message] {write_chat_to_file(chatbot, history)}，您可以調用“載入對話歷史存檔”還原當下的對話。 \n警告！被保存的對話歷史可以被使用該系統的任何人查閱。"))
     yield from update_ui(chatbot=chatbot, history=history) # 刷新界面 # 由于请求gpt需要一段时间，我们先及时地做一次界面更新
 
 def hide_cwd(str):
@@ -105,10 +105,10 @@ def 载入对话历史存档(txt, llm_kwargs, plugin_kwargs, chatbot, history, s
     success, file_manifest, _ = get_files_from_everything(txt, type='.html')
 
     if not success:
-        if txt == "": txt = '空空如也的输入栏'
+        if txt == "": txt = '空空如也的輸入欄'
         import glob
-        local_history = "<br/>".join(["`"+hide_cwd(f)+f" ({gen_file_preview(f)})"+"`" for f in glob.glob(f'gpt_log/**/chatGPT对话历史*.html', recursive=True)])
-        chatbot.append([f"正在查找对话历史文件（html格式）: {txt}", f"找不到任何html文件: {txt}。但本地存储了以下历史文件，您可以将任意一个文件路径粘贴到输入区，然后重试：<br/>{local_history}"])
+        local_history = "<br/>".join(["`"+hide_cwd(f)+f" ({gen_file_preview(f)})"+"`" for f in glob.glob(f'gpt_log/**/ChatGPT對話歷史*.html', recursive=True)])
+        chatbot.append([f"正在查找對話歷史文件（html格式）: {txt}", f"找不到任何html文件: {txt}。但本地存儲了以下歷史文件，您可以將任意一個文件路徑粘貼到輸入區，然後重試：<br/>{local_history}"])
         yield from update_ui(chatbot=chatbot, history=history) # 刷新界面
         return
 
@@ -116,7 +116,7 @@ def 载入对话历史存档(txt, llm_kwargs, plugin_kwargs, chatbot, history, s
         chatbot, history = read_file_to_chat(chatbot, history, file_manifest[0])
         yield from update_ui(chatbot=chatbot, history=history) # 刷新界面
     except:
-        chatbot.append([f"载入对话历史文件", f"对话历史文件损坏！"])
+        chatbot.append([f"載入對話歷史文件", f"對話歷史文件損壞！"])
         yield from update_ui(chatbot=chatbot, history=history) # 刷新界面
         return
 
@@ -133,10 +133,10 @@ def 删除所有本地对话历史记录(txt, llm_kwargs, plugin_kwargs, chatbot
     """
 
     import glob, os
-    local_history = "<br/>".join(["`"+hide_cwd(f)+"`" for f in glob.glob(f'gpt_log/**/chatGPT对话历史*.html', recursive=True)])
-    for f in glob.glob(f'gpt_log/**/chatGPT对话历史*.html', recursive=True):
+    local_history = "<br/>".join(["`"+hide_cwd(f)+"`" for f in glob.glob(f'gpt_log/**/ChatGPT對話歷史*.html', recursive=True)])
+    for f in glob.glob(f'gpt_log/**/ChatGPT對話歷史*.html', recursive=True):
         os.remove(f)
-    chatbot.append([f"删除所有历史对话文件", f"已删除<br/>{local_history}"])
+    chatbot.append([f"刪除所有歷史對話文件", f"已刪除<br/>{local_history}"])
     yield from update_ui(chatbot=chatbot, history=history) # 刷新界面
     return
 

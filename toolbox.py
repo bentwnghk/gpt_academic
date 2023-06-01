@@ -67,7 +67,7 @@ def update_ui(chatbot, history, msg='正常', **kwargs):  # 刷新界面
     """
     刷新用户界面
     """
-    assert isinstance(chatbot, ChatBotWithCookies), "在传递chatbot的过程中不要将其丢弃。必要时，可用clear将其清空，然后用for+append循环重新赋值。"
+    assert isinstance(chatbot, ChatBotWithCookies), "在傳遞chatbot的過程中不要將其丟棄。必要時，可用clear將其清空，然後用for+append循環重新賦值。"
     yield chatbot.get_cookies(), chatbot, history, msg
 
 def trimmed_format_exc():
@@ -93,10 +93,10 @@ def CatchException(f):
             tb_str = '```\n' + trimmed_format_exc() + '```'
             if len(chatbot) == 0:
                 chatbot.clear()
-                chatbot.append(["插件调度异常", "异常原因"])
+                chatbot.append(["插件調度異常", "異常原因"])
             chatbot[-1] = (chatbot[-1][0],
-                           f"[Local Message] 实验性函数调用出错: \n\n{tb_str} \n\n当前代理可用性: \n\n{check_proxy(proxies)}")
-            yield from update_ui(chatbot=chatbot, history=history, msg=f'异常 {e}') # 刷新界面
+                           f"[Local Message] 實驗性函數調用出錯: \n\n{tb_str} \n\n當前代理可用性: \n\n{check_proxy(proxies)}")
+            yield from update_ui(chatbot=chatbot, history=history, msg=f'異常 {e}') # 刷新界面
     return decorated
 
 
@@ -162,11 +162,11 @@ def write_results_to_file(history, file_name=None):
     import time
     if file_name is None:
         # file_name = time.strftime("chatGPT分析报告%Y-%m-%d-%H-%M-%S", time.localtime()) + '.md'
-        file_name = 'chatGPT分析报告' + \
+        file_name = 'chatGPT分析報告' + \
             time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()) + '.md'
     os.makedirs('./gpt_log/', exist_ok=True)
     with open(f'./gpt_log/{file_name}', 'w', encoding='utf8') as f:
-        f.write('# chatGPT 分析报告\n')
+        f.write('# chatGPT 分析報告\n')
         for i, content in enumerate(history):
             try:    
                 if type(content) != str: content = str(content)
@@ -180,7 +180,7 @@ def write_results_to_file(history, file_name=None):
                 # remove everything that cannot be handled by utf8
                 f.write(content.encode('utf-8', 'ignore').decode())
             f.write('\n\n')
-    res = '以上材料已经被写入' + os.path.abspath(f'./gpt_log/{file_name}')
+    res = '以上材料已經被寫入' + os.path.abspath(f'./gpt_log/{file_name}')
     print(res)
     return res
 
@@ -380,7 +380,7 @@ def extract_archive(file_path, dest_dir):
                 print("Successfully extracted rar archive to {}".format(dest_dir))
         except:
             print("Rar format requires additional dependencies to install")
-            return '\n\n需要安装pip install rarfile来解压rar文件'
+            return '\n\n需要安裝pip install rarfile來解壓rar文件'
 
     # 第三方库，需要预先pip install py7zr
     elif file_extension == '.7z':
@@ -391,7 +391,7 @@ def extract_archive(file_path, dest_dir):
                 print("Successfully extracted 7z archive to {}".format(dest_dir))
         except:
             print("7z format requires additional dependencies to install")
-            return '\n\n需要安装pip install py7zr来解压7z文件'
+            return '\n\n需要安裝pip install py7zr來解壓7z文件'
     else:
         return ''
     return ''
@@ -445,17 +445,17 @@ def on_file_uploaded(files, chatbot, txt, txt2, checkboxes):
         err_msg += extract_archive(f'private_upload/{time_tag}/{file_origin_name}',
                                    dest_dir=f'private_upload/{time_tag}/{file_origin_name}.extract')
     moved_files = [fp for fp in glob.glob('private_upload/**/*', recursive=True)]
-    if "底部输入区" in checkboxes:
+    if "底部輸入區" in checkboxes:
         txt = ""
         txt2 = f'private_upload/{time_tag}'
     else:
         txt = f'private_upload/{time_tag}'
         txt2 = ""
     moved_files_str = '\t\n\n'.join(moved_files)
-    chatbot.append(['我上传了文件，请查收',
+    chatbot.append(['我上傳了文件，請查收',
                     f'[Local Message] 收到以下文件: \n\n{moved_files_str}' +
-                    f'\n\n调用路径参数已自动修正到: \n\n{txt}' +
-                    f'\n\n现在您点击任意“红颜色”标识的函数插件时，以上文件将被作为输入参数'+err_msg])
+                    f'\n\n調用路徑參數已自動修正到: \n\n{txt}' +
+                    f'\n\n現在您點擊任意“紅顏色”標識的函數插件時，以上文件將被作為輸入參數'+err_msg])
     return chatbot, txt, txt2
 
 
@@ -465,7 +465,7 @@ def on_report_generated(files, chatbot):
     if len(report_files) == 0:
         return None, chatbot
     # files.extend(report_files)
-    chatbot.append(['报告如何远程获取？', '报告已经添加到右侧“文件上传区”（可能处于折叠状态），请查收。'])
+    chatbot.append(['報告如何遠程獲取？', '報告已經添加到右側“文件上傳區”（可能處於折疊狀態），請查收。'])
     return report_files, chatbot
 
 def is_openai_api_key(key):
@@ -500,7 +500,7 @@ def what_keys(keys):
         if is_api2d_key(k): 
             avail_key_list['API2D Key'] += 1
 
-    return f"检测到： OpenAI Key {avail_key_list['OpenAI Key']} 个，API2D Key {avail_key_list['API2D Key']} 个"
+    return f"檢測到： OpenAI Key {avail_key_list['OpenAI Key']} 个，API2D Key {avail_key_list['API2D Key']} 个"
 
 def select_api_key(keys, llm_model):
     import random
@@ -516,7 +516,7 @@ def select_api_key(keys, llm_model):
             if is_api2d_key(k): avail_key_list.append(k)
 
     if len(avail_key_list) == 0:
-        raise RuntimeError(f"您提供的api-key不满足要求，不包含任何可用于{llm_model}的api-key。您可能选择了错误的模型或请求源。")
+        raise RuntimeError(f"您提供的api-key不滿足要求，不包含任何可用於{llm_model}的api-key。您可能選擇了錯誤的模型或請求源。")
 
     api_key = random.choice(avail_key_list) # 随机负载均衡
     return api_key
@@ -545,7 +545,7 @@ def read_env_variable(arg, default_value):
         env_arg = os.environ[arg]
     else:
         raise KeyError
-    print(f"[ENV_VAR] 尝试加载{arg}，默认值：{default_value} --> 修正值：{env_arg}")
+    print(f"[ENV_VAR] 嘗試加載{arg}，默認值：{default_value} --> 修正值：{env_arg}")
     try:
         if isinstance(default_value, bool):
             env_arg = env_arg.strip()
@@ -566,11 +566,11 @@ def read_env_variable(arg, default_value):
             assert arg == "proxies"
             r = eval(env_arg)
         else:
-            print亮红(f"[ENV_VAR] 环境变量{arg}不支持通过环境变量设置! ")
+            print亮红(f"[ENV_VAR] 環境變量{arg}不支持通過環境變量設置! ")
             raise KeyError
     except:
-        print亮红(f"[ENV_VAR] 环境变量{arg}加载失败! ")
-        raise KeyError(f"[ENV_VAR] 环境变量{arg}加载失败! ")
+        print亮红(f"[ENV_VAR] 環境變量{arg}加載失敗!")
+        raise KeyError(f"[ENV_VAR] 環境變量{arg}加載失敗!")
 
     print亮绿(f"[ENV_VAR] 成功读取环境变量{arg}")
     return r

@@ -74,12 +74,12 @@ def 多文件翻译(file_manifest, project_folder, llm_kwargs, plugin_kwargs, ch
     if language == 'en->zh':
         inputs_array = ["Below is a section from an English academic paper, translate it into Chinese, do not modify any latex command such as \section, \cite and equations:" + 
                         f"\n\n{frag}" for frag in pfg.sp_file_contents]
-        inputs_show_user_array = [f"翻译 {f}" for f in pfg.sp_file_tag]
+        inputs_show_user_array = [f"翻譯 {f}" for f in pfg.sp_file_tag]
         sys_prompt_array = ["You are a professional academic paper translator." for _ in range(n_split)]
     elif language == 'zh->en':
         inputs_array = [f"Below is a section from a Chinese academic paper, translate it into English, do not modify any latex command such as \section, \cite and equations:" + 
                         f"\n\n{frag}" for frag in pfg.sp_file_contents]
-        inputs_show_user_array = [f"翻译 {f}" for f in pfg.sp_file_tag]
+        inputs_show_user_array = [f"翻譯 {f}" for f in pfg.sp_file_tag]
         sys_prompt_array = ["You are a professional academic paper translator." for _ in range(n_split)]
 
     gpt_response_collection = yield from request_gpt_model_multi_threads_with_very_awesome_ui_and_high_efficiency(
@@ -97,7 +97,7 @@ def 多文件翻译(file_manifest, project_folder, llm_kwargs, plugin_kwargs, ch
     create_report_file_name = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()) + f"-chatgpt.polish.md"
     res = write_results_to_file(gpt_response_collection, file_name=create_report_file_name)
     history = gpt_response_collection
-    chatbot.append((f"{fp}完成了吗？", res))
+    chatbot.append((f"{fp}完成了嗎？", res))
     yield from update_ui(chatbot=chatbot, history=history) # 刷新界面
 
 
@@ -108,8 +108,8 @@ def 多文件翻译(file_manifest, project_folder, llm_kwargs, plugin_kwargs, ch
 def Latex英译中(txt, llm_kwargs, plugin_kwargs, chatbot, history, system_prompt, web_port):
     # 基本信息：功能、贡献者
     chatbot.append([
-        "函数插件功能？",
-        "对整个Latex项目进行翻译。函数插件贡献者: Binary-Husky"])
+        "函數插件功能？",
+        "對整個Latex項目進行翻譯。函數插件貢獻者: Binary-Husky"])
     yield from update_ui(chatbot=chatbot, history=history) # 刷新界面
 
     # 尝试导入依赖，如果缺少依赖，则给出安装建议
@@ -117,8 +117,8 @@ def Latex英译中(txt, llm_kwargs, plugin_kwargs, chatbot, history, system_prom
         import tiktoken
     except:
         report_execption(chatbot, history,
-                         a=f"解析项目: {txt}",
-                         b=f"导入软件依赖失败。使用该模块需要额外依赖，安装方法```pip install --upgrade tiktoken```。")
+                         a=f"解析項目: {txt}",
+                         b=f"導入軟件依賴失敗。使用該模塊需要額外依賴，安裝方法```pip install --upgrade tiktoken```。")
         yield from update_ui(chatbot=chatbot, history=history) # 刷新界面
         return
     history = []    # 清空历史，以免输入溢出
@@ -126,13 +126,13 @@ def Latex英译中(txt, llm_kwargs, plugin_kwargs, chatbot, history, system_prom
     if os.path.exists(txt):
         project_folder = txt
     else:
-        if txt == "": txt = '空空如也的输入栏'
-        report_execption(chatbot, history, a = f"解析项目: {txt}", b = f"找不到本地项目或无权访问: {txt}")
+        if txt == "": txt = '空空如也的輸入欄'
+        report_execption(chatbot, history, a = f"解析項目: {txt}", b = f"找不到本地項目或無權訪問: {txt}")
         yield from update_ui(chatbot=chatbot, history=history) # 刷新界面
         return
     file_manifest = [f for f in glob.glob(f'{project_folder}/**/*.tex', recursive=True)]
     if len(file_manifest) == 0:
-        report_execption(chatbot, history, a = f"解析项目: {txt}", b = f"找不到任何.tex文件: {txt}")
+        report_execption(chatbot, history, a = f"解析項目: {txt}", b = f"找不到任何.tex文件: {txt}")
         yield from update_ui(chatbot=chatbot, history=history) # 刷新界面
         return
     yield from 多文件翻译(file_manifest, project_folder, llm_kwargs, plugin_kwargs, chatbot, history, system_prompt, language='en->zh')
@@ -145,8 +145,8 @@ def Latex英译中(txt, llm_kwargs, plugin_kwargs, chatbot, history, system_prom
 def Latex中译英(txt, llm_kwargs, plugin_kwargs, chatbot, history, system_prompt, web_port):
     # 基本信息：功能、贡献者
     chatbot.append([
-        "函数插件功能？",
-        "对整个Latex项目进行翻译。函数插件贡献者: Binary-Husky"])
+        "函數插件功能？",
+        "對整個Latex項目進行翻譯。函數插件貢獻者: Binary-Husky"])
     yield from update_ui(chatbot=chatbot, history=history) # 刷新界面
 
     # 尝试导入依赖，如果缺少依赖，则给出安装建议
@@ -154,8 +154,8 @@ def Latex中译英(txt, llm_kwargs, plugin_kwargs, chatbot, history, system_prom
         import tiktoken
     except:
         report_execption(chatbot, history,
-                         a=f"解析项目: {txt}",
-                         b=f"导入软件依赖失败。使用该模块需要额外依赖，安装方法```pip install --upgrade tiktoken```。")
+                         a=f"解析項目: {txt}",
+                         b=f"導入軟件依賴失敗。使用該模塊需要額外依賴，安裝方法```pip install --upgrade tiktoken```。")
         yield from update_ui(chatbot=chatbot, history=history) # 刷新界面
         return
     history = []    # 清空历史，以免输入溢出
@@ -163,13 +163,13 @@ def Latex中译英(txt, llm_kwargs, plugin_kwargs, chatbot, history, system_prom
     if os.path.exists(txt):
         project_folder = txt
     else:
-        if txt == "": txt = '空空如也的输入栏'
-        report_execption(chatbot, history, a = f"解析项目: {txt}", b = f"找不到本地项目或无权访问: {txt}")
+        if txt == "": txt = '空空如也的輸入欄'
+        report_execption(chatbot, history, a = f"解析項目: {txt}", b = f"找不到本地項目或無權訪問: {txt}")
         yield from update_ui(chatbot=chatbot, history=history) # 刷新界面
         return
     file_manifest = [f for f in glob.glob(f'{project_folder}/**/*.tex', recursive=True)]
     if len(file_manifest) == 0:
-        report_execption(chatbot, history, a = f"解析项目: {txt}", b = f"找不到任何.tex文件: {txt}")
+        report_execption(chatbot, history, a = f"解析項目: {txt}", b = f"找不到任何.tex文件: {txt}")
         yield from update_ui(chatbot=chatbot, history=history) # 刷新界面
         return
     yield from 多文件翻译(file_manifest, project_folder, llm_kwargs, plugin_kwargs, chatbot, history, system_prompt, language='zh->en')

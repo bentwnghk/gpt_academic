@@ -59,7 +59,7 @@ def get_meta_information(url, chatbot, history):
             'is_paper_in_arxiv':is_paper_in_arxiv,
         })
 
-        chatbot[-1] = [chatbot[-1][0], title + f'\n\n是否在arxiv中（不在arxiv中无法获取完整摘要）:{is_paper_in_arxiv}\n\n' + abstract]
+        chatbot[-1] = [chatbot[-1][0], title + f'\n\n是否在arxiv中（不在arxiv中無法獲取完整摘要）:{is_paper_in_arxiv}\n\n' + abstract]
         yield from update_ui(chatbot=chatbot, history=[]) # 刷新界面
     return profile
 
@@ -67,8 +67,8 @@ def get_meta_information(url, chatbot, history):
 def 谷歌检索小助手(txt, llm_kwargs, plugin_kwargs, chatbot, history, system_prompt, web_port):
     # 基本信息：功能、贡献者
     chatbot.append([
-        "函数插件功能？",
-        "分析用户提供的谷歌学术（google scholar）搜索页面中，出现的所有文章: binary-husky，插件初始化中..."])
+        "函數插件功能？",
+        "分析用戶提供的谷歌學術（google scholar）搜索頁面中，出現的所有文章: binary-husky，插件初始化中..."])
     yield from update_ui(chatbot=chatbot, history=history) # 刷新界面
 
     # 尝试导入依赖，如果缺少依赖，则给出安装建议
@@ -78,8 +78,8 @@ def 谷歌检索小助手(txt, llm_kwargs, plugin_kwargs, chatbot, history, syst
         from bs4 import BeautifulSoup
     except:
         report_execption(chatbot, history, 
-            a = f"解析项目: {txt}", 
-            b = f"导入软件依赖失败。使用该模块需要额外依赖，安装方法```pip install --upgrade beautifulsoup4 arxiv```。")
+            a = f"解析項目: {txt}", 
+            b = f"導入軟件依賴失敗。使用該模塊需要額外依賴，安裝方法```pip install --upgrade beautifulsoup4 arxiv```。")
         yield from update_ui(chatbot=chatbot, history=history) # 刷新界面
         return
 
@@ -89,24 +89,24 @@ def 谷歌检索小助手(txt, llm_kwargs, plugin_kwargs, chatbot, history, syst
     batchsize = 5
     for batch in range(math.ceil(len(meta_paper_info_list)/batchsize)):
         if len(meta_paper_info_list[:batchsize]) > 0:
-            i_say = "下面是一些学术文献的数据，提取出以下内容：" + \
-            "1、英文题目；2、中文题目翻译；3、作者；4、arxiv公开（is_paper_in_arxiv）；4、引用数量（cite）；5、中文摘要翻译。" + \
+            i_say = "下面是一些學術文獻的數據，提取出以下內容：" + \
+            "1、英文題目；2、中文題目翻譯；3、作者；4、arxiv公開（is_paper_in_arxiv）；4、引用數量（cite）；5、中文摘要翻譯。" + \
             f"以下是信息源：{str(meta_paper_info_list[:batchsize])}" 
 
-            inputs_show_user = f"请分析此页面中出现的所有文章：{txt}，这是第{batch+1}批"
+            inputs_show_user = f"請分析此頁面中出現的所有文章：{txt}，這是第{batch+1}批"
             gpt_say = yield from request_gpt_model_in_new_thread_with_ui_alive(
                 inputs=i_say, inputs_show_user=inputs_show_user,
                 llm_kwargs=llm_kwargs, chatbot=chatbot, history=[],
-                sys_prompt="你是一个学术翻译，请从数据中提取信息。你必须使用Markdown表格。你必须逐个文献进行处理。"
+                sys_prompt="你是一個學術翻譯，請從數據中提取信息。你必須使用Markdown表格。你必須逐個文獻進行處理。"
             )
 
             history.extend([ f"第{batch+1}批", gpt_say ])
             meta_paper_info_list = meta_paper_info_list[batchsize:]
 
-    chatbot.append(["状态？", 
-        "已经全部完成，您可以试试让AI写一个Related Works，例如您可以继续输入Write a \"Related Works\" section about \"你搜索的研究领域\" for me."])
+    chatbot.append(["狀態？", 
+        "已經全部完成，您可以試試讓AI寫一個Related Works，例如您可以繼續輸入Write a \"Related Works\" section about \"你搜索的研究領域\" for me."])
     msg = '正常'
     yield from update_ui(chatbot=chatbot, history=history, msg=msg) # 刷新界面
     res = write_results_to_file(history)
-    chatbot.append(("完成了吗？", res)); 
+    chatbot.append(("完成了嗎？", res)); 
     yield from update_ui(chatbot=chatbot, history=history, msg=msg) # 刷新界面

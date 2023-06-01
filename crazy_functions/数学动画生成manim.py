@@ -8,7 +8,7 @@ def inspect_dependency(chatbot, history):
         import manim
         return True
     except:
-        chatbot.append(["导入依赖失败", "使用该模块需要额外依赖，安装方法:```pip install manimgl```"])
+        chatbot.append(["導入依賴失敗", "使用該模塊需要額外依賴，安裝方法:```pip install manimgl```"])
         yield from update_ui(chatbot=chatbot, history=history) # 刷新界面
         return False
 
@@ -63,8 +63,8 @@ def 动画生成(txt, llm_kwargs, plugin_kwargs, chatbot, history, system_prompt
 
     # 基本信息：功能、贡献者
     chatbot.append([
-        "函数插件功能？",
-        "生成数学动画, 此插件处于开发阶段, 建议暂时不要使用, 作者: binary-husky, 插件初始化中 ..."
+        "函數插件功能？",
+        "生成數學動畫, 此插件處於開發階段, 建議暫時不要使用, 作者: binary-husky, 插件初始化中 ..."
     ])
     yield from update_ui(chatbot=chatbot, history=history) # 刷新界面
 
@@ -73,19 +73,19 @@ def 动画生成(txt, llm_kwargs, plugin_kwargs, chatbot, history, system_prompt
     if not dep_ok: return
     
     # 输入
-    i_say = f'Generate a animation to show: ' + txt
-    demo = ["Here is some examples of manim", examples_of_manim()]
+    i_say = f'Generate an animation to show: ' + txt
+    demo = ["Here are some examples of manim", examples_of_manim()]
     _, demo = input_clipping(inputs="", history=demo, max_token_limit=2560)
     # 开始
     gpt_say = yield from request_gpt_model_in_new_thread_with_ui_alive(
         inputs=i_say, inputs_show_user=i_say, 
         llm_kwargs=llm_kwargs, chatbot=chatbot, history=demo, 
         sys_prompt=
-        r"Write a animation script with 3blue1brown's manim. "+
+        r"Write an animation script with 3blue1brown's manim. "+
         r"Please begin with `from manim import *`. " + 
         r"Answer me with a code block wrapped by ```."
     )
-    chatbot.append(["开始生成动画", "..."])
+    chatbot.append(["開始生成動畫", "..."])
     history.extend([i_say, gpt_say])
     yield from update_ui(chatbot=chatbot, history=history) # 刷新界面 # 界面更新
     
@@ -93,7 +93,7 @@ def 动画生成(txt, llm_kwargs, plugin_kwargs, chatbot, history, system_prompt
     code = get_code_block(gpt_say)
     res = eval_manim(code)
 
-    chatbot.append(("生成的视频文件路径", res))
+    chatbot.append(("生成的視頻文件路徑", res))
     yield from update_ui(chatbot=chatbot, history=history) # 刷新界面 # 界面更新
 
 # 在这里放一些网上搜集的demo，辅助gpt生成代码

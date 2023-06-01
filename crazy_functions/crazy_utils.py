@@ -73,7 +73,7 @@ def request_gpt_model_in_new_thread_with_ui_alive(
         while True:
             # watchdog error
             if len(mutable) >= 2 and (time.time()-mutable[1]) > 5: 
-                raise RuntimeError("检测到程序终止。")
+                raise RuntimeError("檢測到程序終止。")
             try:
                 # 【第一种情况】：顺利完成
                 result = predict_no_ui_long_connection(
@@ -90,21 +90,21 @@ def request_gpt_model_in_new_thread_with_ui_alive(
                     MAX_TOKEN = 4096
                     EXCEED_ALLO = 512 + 512 * exceeded_cnt
                     inputs, history = input_clipping(inputs, history, max_token_limit=MAX_TOKEN-EXCEED_ALLO)
-                    mutable[0] += f'[Local Message] 警告，文本过长将进行截断，Token溢出数：{n_exceed}。\n\n'
+                    mutable[0] += f'[Local Message] 警告，文本過長將進行截斷，Token溢出數：{n_exceed}。\n\n'
                     continue # 返回重试
                 else:
                     # 【选择放弃】
                     tb_str = '```\n' + trimmed_format_exc() + '```'
-                    mutable[0] += f"[Local Message] 警告，在执行过程中遭遇问题, Traceback：\n\n{tb_str}\n\n"
+                    mutable[0] += f"[Local Message] 警告，在執行過程中遭遇問題, Traceback：\n\n{tb_str}\n\n"
                     return mutable[0] # 放弃
             except:
                 # 【第三种情况】：其他错误：重试几次
                 tb_str = '```\n' + trimmed_format_exc() + '```'
                 print(tb_str)
-                mutable[0] += f"[Local Message] 警告，在执行过程中遭遇问题, Traceback：\n\n{tb_str}\n\n"
+                mutable[0] += f"[Local Message] 警告，在執行過程中遭遇問題, Traceback：\n\n{tb_str}\n\n"
                 if retry_op > 0:
                     retry_op -= 1
-                    mutable[0] += f"[Local Message] 重试中，请稍等 {retry_times_at_unknown_error-retry_op}/{retry_times_at_unknown_error}：\n\n"
+                    mutable[0] += f"[Local Message] 重試中，請稍等 {retry_times_at_unknown_error-retry_op}/{retry_times_at_unknown_error}：\n\n"
                     if ("Rate limit reached" in tb_str) or ("Too Many Requests" in tb_str):
                         time.sleep(30)
                     time.sleep(5)
@@ -181,7 +181,7 @@ def request_gpt_model_multi_threads_with_very_awesome_ui_and_high_efficiency(
     executor = ThreadPoolExecutor(max_workers=max_workers)
     n_frag = len(inputs_array)
     # 用户反馈
-    chatbot.append(["请开始多线程操作。", ""])
+    chatbot.append(["請開始多線程操作。", ""])
     yield from update_ui(chatbot=chatbot, history=[]) # 刷新界面
     # 跨线程传递
     mutable = [["", time.time(), "等待中"] for _ in range(n_frag)]
@@ -191,11 +191,11 @@ def request_gpt_model_multi_threads_with_very_awesome_ui_and_high_efficiency(
         gpt_say = ""
         retry_op = retry_times_at_unknown_error
         exceeded_cnt = 0
-        mutable[index][2] = "执行中"
+        mutable[index][2] = "執行中"
         while True:
             # watchdog error
             if len(mutable[index]) >= 2 and (time.time()-mutable[index][1]) > 5: 
-                raise RuntimeError("检测到程序终止。")
+                raise RuntimeError("檢測到程序終止。")
             try:
                 # 【第一种情况】：顺利完成
                 # time.sleep(10); raise RuntimeError("测试")
@@ -215,38 +215,38 @@ def request_gpt_model_multi_threads_with_very_awesome_ui_and_high_efficiency(
                     MAX_TOKEN = 4096
                     EXCEED_ALLO = 512 + 512 * exceeded_cnt
                     inputs, history = input_clipping(inputs, history, max_token_limit=MAX_TOKEN-EXCEED_ALLO)
-                    gpt_say += f'[Local Message] 警告，文本过长将进行截断，Token溢出数：{n_exceed}。\n\n'
-                    mutable[index][2] = f"截断重试"
+                    gpt_say += f'[Local Message] 警告，文本過長將進行截斷，Token溢出數：{n_exceed}。\n\n'
+                    mutable[index][2] = f"截斷重試"
                     continue # 返回重试
                 else:
                     # 【选择放弃】
                     tb_str = '```\n' + trimmed_format_exc() + '```'
-                    gpt_say += f"[Local Message] 警告，线程{index}在执行过程中遭遇问题, Traceback：\n\n{tb_str}\n\n"
-                    if len(mutable[index][0]) > 0: gpt_say += "此线程失败前收到的回答：\n\n" + mutable[index][0]
-                    mutable[index][2] = "输入过长已放弃"
+                    gpt_say += f"[Local Message] 警告，線程{index}在執行過程中遭遇問題, Traceback：\n\n{tb_str}\n\n"
+                    if len(mutable[index][0]) > 0: gpt_say += "此線程失敗前收到的回答：\n\n" + mutable[index][0]
+                    mutable[index][2] = "輸入過長已放棄"
                     return gpt_say # 放弃
             except:
                 # 【第三种情况】：其他错误
                 tb_str = '```\n' + trimmed_format_exc() + '```'
                 print(tb_str)
-                gpt_say += f"[Local Message] 警告，线程{index}在执行过程中遭遇问题, Traceback：\n\n{tb_str}\n\n"
-                if len(mutable[index][0]) > 0: gpt_say += "此线程失败前收到的回答：\n\n" + mutable[index][0]
+                gpt_say += f"[Local Message] 警告，線程{index}在執行過程中遭遇問題, Traceback：\n\n{tb_str}\n\n"
+                if len(mutable[index][0]) > 0: gpt_say += "此線程失敗前收到的回答：\n\n" + mutable[index][0]
                 if retry_op > 0: 
                     retry_op -= 1
                     wait = random.randint(5, 20)
                     if ("Rate limit reached" in tb_str) or ("Too Many Requests" in tb_str):
                         wait = wait * 3
-                        fail_info = "OpenAI绑定信用卡可解除频率限制 "
+                        fail_info = "OpenAI綁定信用卡可解除頻率限制 "
                     else:
                         fail_info = ""
                     # 也许等待十几秒后，情况会好转
                     for i in range(wait):
-                        mutable[index][2] = f"{fail_info}等待重试 {wait-i}"; time.sleep(1)
+                        mutable[index][2] = f"{fail_info}等待重試 {wait-i}"; time.sleep(1)
                     # 开始重试
-                    mutable[index][2] = f"重试中 {retry_times_at_unknown_error-retry_op}/{retry_times_at_unknown_error}"
+                    mutable[index][2] = f"重試中 {retry_times_at_unknown_error-retry_op}/{retry_times_at_unknown_error}"
                     continue # 返回重试
                 else:
-                    mutable[index][2] = "已失败"
+                    mutable[index][2] = "已失敗"
                     wait = 5
                     time.sleep(5)
                     return gpt_say # 放弃
@@ -276,7 +276,7 @@ def request_gpt_model_multi_threads_with_very_awesome_ui_and_high_efficiency(
                             if not done else f'`{mutable[thread_index][2]}`\n\n' 
                             for thread_index, done, obs in zip(range(len(worker_done)), worker_done, observe_win)])
         # 在前端打印些好玩的东西
-        chatbot[-1] = [chatbot[-1][0], f'多线程操作已经开始，完成情况: \n\n{stat_str}' + ''.join(['.']*(cnt % 10+1))]
+        chatbot[-1] = [chatbot[-1][0], f'多線程操作已經開始，完成情況: \n\n{stat_str}' + ''.join(['.']*(cnt % 10+1))]
         yield from update_ui(chatbot=chatbot, history=[]) # 刷新界面
         if all(worker_done):
             executor.shutdown()
@@ -316,7 +316,7 @@ def breakdown_txt_to_satisfy_token_limit(txt, get_token_fn, limit):
                 if get_token_fn(prev) < limit:
                     break
             if cnt == 0:
-                raise RuntimeError("存在一行极长的文本！")
+                raise RuntimeError("存在一行極長的文本！")
             # print(len(post))
             # 列表递归接龙
             result = [prev]
@@ -335,7 +335,7 @@ def force_breakdown(txt, limit, get_token_fn):
     for i in reversed(range(len(txt))):
         if get_token_fn(txt[:i]) < limit:
             return txt[:i], txt[i:]
-    return "Tiktoken未知错误", "Tiktoken未知错误"
+    return "Tiktoken未知錯誤", "Tiktoken未知錯誤"
 
 def breakdown_txt_to_satisfy_token_limit_for_pdf(txt, get_token_fn, limit):
     # 递归
@@ -359,7 +359,7 @@ def breakdown_txt_to_satisfy_token_limit_for_pdf(txt, get_token_fn, limit):
                 if break_anyway:
                     prev, post = force_breakdown(txt_tocut, limit, get_token_fn)
                 else:
-                    raise RuntimeError(f"存在一行极长的文本！{txt_tocut}")
+                    raise RuntimeError(f"存在一行極長的文本！{txt_tocut}")
             # print(len(post))
             # 列表递归接龙
             result = [prev]

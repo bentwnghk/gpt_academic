@@ -125,15 +125,15 @@ def test_下载arxiv论文并翻译摘要():
 
 def test_联网回答问题():
     from crazy_functions.联网的ChatGPT import 连接网络回答问题
-    # txt = "谁是应急食品？"
-    # >>        '根据以上搜索结果可以得知，应急食品是“原神”游戏中的角色派蒙的外号。'
-    # txt = "道路千万条，安全第一条。后面两句是？"
-    # >>        '行车不规范，亲人两行泪。'
+    # txt = "誰是應急食品？"
+    # >>        '根據以上搜索結果可以得知，應急食品是“原神”遊戲中的角色派蒙的外號。 '
+    # txt = "道路千萬條，安全第一條。後面兩句是？"
+    # >>        '行車不規範，親人兩行淚。 '
     # txt = "You should have gone for the head. What does that mean?"
     # >>        The phrase "You should have gone for the head" is a quote from the Marvel movies, Avengers: Infinity War and Avengers: Endgame. It was spoken by the character Thanos in Infinity War and by Thor in Endgame.
-    txt = "AutoGPT是什么？"
+    txt = "AutoGPT是什麼？"
     for cookies, cb, hist, msg in 连接网络回答问题(txt, llm_kwargs, plugin_kwargs, chatbot, history, system_prompt, web_port): 
-        print("当前问答：", cb[-1][-1].replace("\n"," "))
+        print("當前問答：", cb[-1][-1].replace("\n"," "))
     for i, it in enumerate(cb): print亮蓝(it[0]); print亮黄(it[1])
 
 def test_解析ipynb文件():
@@ -175,7 +175,7 @@ def test_Langchain知识库():
 
 def test_Langchain知识库读取():
     from crazy_functions.Langchain知识库 import 读取知识库作答
-    txt = "远程云服务器部署？"
+    txt = "遠程雲服務器部署？"
     for cookies, cb, hist, msg in silence_stdout(读取知识库作答)(txt, llm_kwargs, plugin_kwargs, chatbot, history, system_prompt, web_port):
         cli_printer.print(cb)   #  print(cb)
 
@@ -195,5 +195,5 @@ def test_Langchain知识库读取():
 test_Langchain知识库()
 # test_Langchain知识库读取()
 
-input("程序完成，回车退出。")
+input("程序完成，回車退出。")
 print("退出。")

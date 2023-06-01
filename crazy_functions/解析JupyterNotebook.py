@@ -105,20 +105,20 @@ def ipynb解释(file_manifest, project_folder, llm_kwargs, plugin_kwargs, chatbo
 
     #  <-------- 整理结果，退出 ---------->
     block_result = "  \n".join(gpt_response_collection)
-    chatbot.append(("解析的结果如下", block_result))
-    history.extend(["解析的结果如下", block_result])
+    chatbot.append(("解析的結果如下", block_result))
+    history.extend(["解析的結果如下", block_result])
     yield from update_ui(chatbot=chatbot, history=history)  # 刷新界面
 
     #  <-------- 写入文件，退出 ---------->
     res = write_results_to_file(history)
-    chatbot.append(("完成了吗？", res))
+    chatbot.append(("完成了嗎？", res))
     yield from update_ui(chatbot=chatbot, history=history) # 刷新界面
 
 @CatchException
 def 解析ipynb文件(txt, llm_kwargs, plugin_kwargs, chatbot, history, system_prompt, web_port):
     chatbot.append([
-        "函数插件功能？",
-        "对IPynb文件进行解析。Contributor: codycjy."])
+        "函數插件功能？",
+        "對IPynb文件進行解析。 Contributor: codycjy."])
     yield from update_ui(chatbot=chatbot, history=history)  # 刷新界面
 
     history = []    # 清空历史
@@ -128,9 +128,9 @@ def 解析ipynb文件(txt, llm_kwargs, plugin_kwargs, chatbot, history, system_p
         project_folder = txt
     else:
         if txt == "":
-            txt = '空空如也的输入栏'
+            txt = '空空如也的輸入欄'
         report_execption(chatbot, history,
-                         a=f"解析项目: {txt}", b=f"找不到本地项目或无权访问: {txt}")
+                         a=f"解析項目: {txt}", b=f"找不到本地項目或無權訪問: {txt}")
         yield from update_ui(chatbot=chatbot, history=history)  # 刷新界面
         return
     if txt.endswith('.ipynb'):
@@ -140,7 +140,7 @@ def 解析ipynb文件(txt, llm_kwargs, plugin_kwargs, chatbot, history, system_p
             f'{project_folder}/**/*.ipynb', recursive=True)]
     if len(file_manifest) == 0:
         report_execption(chatbot, history,
-                         a=f"解析项目: {txt}", b=f"找不到任何.ipynb文件: {txt}")
+                         a=f"解析項目: {txt}", b=f"找不到任何.ipynb文件: {txt}")
         yield from update_ui(chatbot=chatbot, history=history)  # 刷新界面
         return
     yield from ipynb解释(file_manifest, project_folder, llm_kwargs, plugin_kwargs, chatbot, history, system_prompt, )

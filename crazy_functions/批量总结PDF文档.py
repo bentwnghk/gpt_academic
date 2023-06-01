@@ -69,9 +69,9 @@ def 解析PDF(file_manifest, project_folder, llm_kwargs, plugin_kwargs, chatbot,
             file_content = clean_text(file_content)
             print(file_content)
 
-        prefix = "接下来请你逐文件分析下面的论文文件，概括其内容" if index==0 else ""
-        i_say = prefix + f'请对下面的文章片段用中文做一个概述，文件名是{os.path.relpath(fp, project_folder)}，文章内容是 ```{file_content}```'
-        i_say_show_user = prefix + f'[{index}/{len(file_manifest)}] 请对下面的文章片段做一个概述: {os.path.abspath(fp)}'
+        prefix = "接下來請你逐文件分析下面的論文文件，概括其內容" if index==0 else ""
+        i_say = prefix + f'請對下面的文章片段用繁體中文做一個概述，文件名是{os.path.relpath(fp, project_folder)}，文章内容是 ```{file_content}```'
+        i_say_show_user = prefix + f'[{index}/{len(file_manifest)}] 請對下面的文章片段做一個概述: {os.path.abspath(fp)}'
         chatbot.append((i_say_show_user, "[Local Message] waiting gpt response."))
         yield from update_ui(chatbot=chatbot, history=history) # 刷新界面
 
@@ -84,7 +84,7 @@ def 解析PDF(file_manifest, project_folder, llm_kwargs, plugin_kwargs, chatbot,
                 llm_kwargs=llm_kwargs,
                 chatbot=chatbot, 
                 history=[],
-                sys_prompt="总结文章。"
+                sys_prompt="總結文章。"
             )  # 带超时倒计时
                 
 
@@ -94,8 +94,8 @@ def 解析PDF(file_manifest, project_folder, llm_kwargs, plugin_kwargs, chatbot,
             if not fast_debug: time.sleep(2)
 
     all_file = ', '.join([os.path.relpath(fp, project_folder) for index, fp in enumerate(file_manifest)])
-    i_say = f'根据以上你自己的分析，对全文进行概括，用学术性语言写一段中文摘要，然后再写一段英文摘要（包括{all_file}）。'
-    chatbot.append((i_say, "[Local Message] waiting gpt response."))
+    i_say = f'根據以上你自己的分析，對全文進行概括，用學術性語言寫一段繁體中文摘要，然後再寫一段英文摘要（包括{all_file}）。'
+    chatbot.append((i_say, "[Local Message] waiting for GPT response."))
     yield from update_ui(chatbot=chatbot, history=history) # 刷新界面
 
     if not fast_debug: 
@@ -107,14 +107,14 @@ def 解析PDF(file_manifest, project_folder, llm_kwargs, plugin_kwargs, chatbot,
             llm_kwargs=llm_kwargs,
             chatbot=chatbot, 
             history=history,
-            sys_prompt="总结文章。"
+            sys_prompt="總結文章。"
         )  # 带超时倒计时
 
         chatbot[-1] = (i_say, gpt_say)
         history.append(i_say); history.append(gpt_say)
         yield from update_ui(chatbot=chatbot, history=history, msg=msg) # 刷新界面
         res = write_results_to_file(history)
-        chatbot.append(("完成了吗？", res))
+        chatbot.append(("完成了嗎？", res))
         yield from update_ui(chatbot=chatbot, history=history, msg=msg) # 刷新界面
 
 
@@ -124,8 +124,8 @@ def 批量总结PDF文档(txt, llm_kwargs, plugin_kwargs, chatbot, history, syst
 
     # 基本信息：功能、贡献者
     chatbot.append([
-        "函数插件功能？",
-        "批量总结PDF文档。函数插件贡献者: ValeriaWong，Eralien"])
+        "函數插件功能？",
+        "批量總結PDF文檔。函數插件貢獻者: ValeriaWong，Eralien"])
     yield from update_ui(chatbot=chatbot, history=history) # 刷新界面
 
     # 尝试导入依赖，如果缺少依赖，则给出安装建议
@@ -133,8 +133,8 @@ def 批量总结PDF文档(txt, llm_kwargs, plugin_kwargs, chatbot, history, syst
         import fitz
     except:
         report_execption(chatbot, history, 
-            a = f"解析项目: {txt}", 
-            b = f"导入软件依赖失败。使用该模块需要额外依赖，安装方法```pip install --upgrade pymupdf```。")
+            a = f"解析項目: {txt}", 
+            b = f"導入軟件依賴失敗。使用該模塊需要額外依賴，安裝方法```pip install --upgrade pymupdf```。")
         yield from update_ui(chatbot=chatbot, history=history) # 刷新界面
         return
 
@@ -145,8 +145,8 @@ def 批量总结PDF文档(txt, llm_kwargs, plugin_kwargs, chatbot, history, syst
     if os.path.exists(txt):
         project_folder = txt
     else:
-        if txt == "": txt = '空空如也的输入栏'
-        report_execption(chatbot, history, a = f"解析项目: {txt}", b = f"找不到本地项目或无权访问: {txt}")
+        if txt == "": txt = '空空如也的輸入欄'
+        report_execption(chatbot, history, a = f"解析項目: {txt}", b = f"找不到本地項目或無權訪問: {txt}")
         yield from update_ui(chatbot=chatbot, history=history) # 刷新界面
         return
 
@@ -158,7 +158,7 @@ def 批量总结PDF文档(txt, llm_kwargs, plugin_kwargs, chatbot, history, syst
     
     # 如果没找到任何文件
     if len(file_manifest) == 0:
-        report_execption(chatbot, history, a = f"解析项目: {txt}", b = f"找不到任何.tex或.pdf文件: {txt}")
+        report_execption(chatbot, history, a = f"解析項目: {txt}", b = f"找不到任何.tex或.pdf文件: {txt}")
         yield from update_ui(chatbot=chatbot, history=history) # 刷新界面
         return
 

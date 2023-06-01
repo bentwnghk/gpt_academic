@@ -76,24 +76,24 @@ def AnalyAudio(parse_prompt, file_manifest, llm_kwargs, chatbot, history):
                     'response_format': "text"
                 }
 
-            chatbot.append([f"将 {i} 发送到openai音频解析终端 (whisper)，当前参数：{parse_prompt}", "正在处理 ..."])
+            chatbot.append([f"將 {i} 發送到openai音頻解析終端 (whisper)，當前參數：{parse_prompt}", "正在處理 ..."])
             yield from update_ui(chatbot=chatbot, history=history)  # 刷新界面
             proxies, = get_conf('proxies')
             response = requests.post(url, headers=headers, files=files, data=data, proxies=proxies).text
 
-            chatbot.append(["音频解析结果", response])
-            history.extend(["音频解析结果", response])
+            chatbot.append(["音頻解析結果", response])
+            history.extend(["音頻解析結果", response])
             yield from update_ui(chatbot=chatbot, history=history)  # 刷新界面
 
-            i_say = f'请对下面的音频片段做概述，音频内容是 ```{response}```'
-            i_say_show_user = f'第{index + 1}段音频的第{j + 1} / {len(voice)}片段。'
+            i_say = f'請對下面的音頻片段做概述，音頻內容是 ```{response}```'
+            i_say_show_user = f'第{index + 1}段音頻的第{j + 1} / {len(voice)}片段。'
             gpt_say = yield from request_gpt_model_in_new_thread_with_ui_alive(
                 inputs=i_say,
                 inputs_show_user=i_say_show_user,
                 llm_kwargs=llm_kwargs,
                 chatbot=chatbot,
                 history=[],
-                sys_prompt=f"总结音频。音频文件名{fp}"
+                sys_prompt=f"總結音頻。音頻文件名{fp}"
             )
 
             chatbot[-1] = (i_say_show_user, gpt_say)
@@ -103,29 +103,29 @@ def AnalyAudio(parse_prompt, file_manifest, llm_kwargs, chatbot, history):
         # 已经对该文章的所有片段总结完毕，如果文章被切分了
         result = "".join(audio_history)
         if len(audio_history) > 1:
-            i_say = f"根据以上的对话，使用中文总结音频“{result}”的主要内容。"
-            i_say_show_user = f'第{index + 1}段音频的主要内容：'
+            i_say = f"根據以上的對話，使用中文總結音頻“{result}”的主要内容。"
+            i_say_show_user = f'第{index + 1}段音頻的主要內容：'
             gpt_say = yield from request_gpt_model_in_new_thread_with_ui_alive(
                 inputs=i_say,
                 inputs_show_user=i_say_show_user,
                 llm_kwargs=llm_kwargs,
                 chatbot=chatbot,
                 history=audio_history,
-                sys_prompt="总结文章。"
+                sys_prompt="總結文章。"
             )
 
             history.extend([i_say, gpt_say])
             audio_history.extend([i_say, gpt_say])
 
         res = write_results_to_file(history)
-        chatbot.append((f"第{index + 1}段音频完成了吗？", res))
+        chatbot.append((f"第{index + 1}段音頻完成了嗎？", res))
         yield from update_ui(chatbot=chatbot, history=history)  # 刷新界面
 
     # 删除中间文件夹
     import shutil
     shutil.rmtree('gpt_log/mp3')
     res = write_results_to_file(history)
-    chatbot.append(("所有音频都总结完成了吗？", res))
+    chatbot.append(("所有音頻都總結完成了嗎？", res))
     yield from update_ui(chatbot=chatbot, history=history)
 
 
@@ -135,16 +135,16 @@ def 总结音视频(txt, llm_kwargs, plugin_kwargs, chatbot, history, system_pro
 
     # 基本信息：功能、贡献者
     chatbot.append([
-        "函数插件功能？",
-        "总结音视频内容，函数插件贡献者: dalvqw & BinaryHusky"])
+        "函數插件功能？",
+        "總結音視頻內容，函數插件貢獻者: dalvqw & BinaryHusky"])
     yield from update_ui(chatbot=chatbot, history=history)  # 刷新界面
 
     try:
         from moviepy.editor import AudioFileClip
     except:
         report_execption(chatbot, history,
-                         a=f"解析项目: {txt}",
-                         b=f"导入软件依赖失败。使用该模块需要额外依赖，安装方法```pip install --upgrade moviepy```。")
+                         a=f"解析項目: {txt}",
+                         b=f"導入軟件依賴失敗。使用該模塊需要額外依賴，安裝方法```pip install --upgrade moviepy```。")
         yield from update_ui(chatbot=chatbot, history=history)  # 刷新界面
         return
 
@@ -155,8 +155,8 @@ def 总结音视频(txt, llm_kwargs, plugin_kwargs, chatbot, history, system_pro
     if os.path.exists(txt):
         project_folder = txt
     else:
-        if txt == "": txt = '空空如也的输入栏'
-        report_execption(chatbot, history, a=f"解析项目: {txt}", b=f"找不到本地项目或无权访问: {txt}")
+        if txt == "": txt = '空空如也的輸入欄'
+        report_execption(chatbot, history, a=f"解析項目: {txt}", b=f"找不到本地項目或無權訪問: {txt}")
         yield from update_ui(chatbot=chatbot, history=history)  # 刷新界面
         return
 
@@ -172,13 +172,13 @@ def 总结音视频(txt, llm_kwargs, plugin_kwargs, chatbot, history, system_pro
 
     # 如果没找到任何文件
     if len(file_manifest) == 0:
-        report_execption(chatbot, history, a=f"解析项目: {txt}", b=f"找不到任何音频或视频文件: {txt}")
+        report_execption(chatbot, history, a=f"解析項目: {txt}", b=f"找不到任何音頻或視頻文件: {txt}")
         yield from update_ui(chatbot=chatbot, history=history)  # 刷新界面
         return
 
     # 开始正式执行任务
     if ("advanced_arg" in plugin_kwargs) and (plugin_kwargs["advanced_arg"] == ""): plugin_kwargs.pop("advanced_arg")
-    parse_prompt = plugin_kwargs.get("advanced_arg", '将音频解析为简体中文')
+    parse_prompt = plugin_kwargs.get("advanced_arg", '將音頻解析為繁體中文')
     yield from AnalyAudio(parse_prompt, file_manifest, llm_kwargs, chatbot, history)
 
     yield from update_ui(chatbot=chatbot, history=history)  # 刷新界面

@@ -34,7 +34,7 @@ if __name__ == "__main__":
                                         sys_prompt="")
     print('final result:', result)
 
-    result = predict_no_ui_long_connection(inputs="如何理解传奇?", 
+    result = predict_no_ui_long_connection(inputs="如何理解傳奇?", 
                                         llm_kwargs=llm_kwargs,
                                         history=[],
                                         sys_prompt="")
@@ -68,8 +68,8 @@ if __name__ == "__main__":
     #                 jittorllms_model = get_model(types.SimpleNamespace(**args_dict))
     #                 print('done get model')
     #         except:
-    #             # self.child.send('[Local Message] Call jittorllms fail 不能正常加载jittorllms的参数。')
-    #             raise RuntimeError("不能正常加载jittorllms的参数！")
+    #             # self.child.send('[Local Message] Call jittorllms fail 不能正常加載jittorllms的參數。')
+    #             raise RuntimeError("不能正常加載jittorllms的參數。")
             
     # x = GetGLMHandle()
     # x.start()

@@ -2,7 +2,7 @@ import os; os.environ['no_proxy'] = '*' # 避免代理网络产生意外污染
 
 def main():
     import gradio as gr
-    if gr.__version__ not in ['3.28.3','3.32.2']: assert False, "请用 pip install -r requirements.txt 安装依赖"
+    if gr.__version__ not in ['3.28.3','3.32.2']: assert False, "請用 pip install -r requirements.txt 安裝依賴"
     from request_llm.bridge_all import predict
     from toolbox import format_io, find_free_port, on_file_uploaded, on_report_generated, get_conf, ArgsGeneralWrapper, DummyWith
     # 建议您复制一个config_private.py放自己的秘密, 如API和代理网址, 避免不小心传github被别人看到
@@ -16,7 +16,7 @@ def main():
     from check_proxy import get_current_version
     initial_prompt = "Serve me as a writing and programming assistant."
     title_html = f"<h1 align=\"center\">ChatGPT 學術優化 {get_current_version()}</h1>"
-    description =  """代碼開源和更新[地址](https://github.com/bentwnghk/chatgpt_academic)🚀"""
+    description =  ""
 
     # 问询记录, python 版本建议3.9+（越新越好）
     import logging
@@ -184,7 +184,7 @@ def main():
     # gradio的inbrowser触发不太稳定，回滚代码到原始的浏览器打开函数
     def auto_opentab_delay():
         import threading, webbrowser, time
-        print(f"如果浏览器没有自动打开，请复制并转到以下URL：")
+        print(f"如果瀏覽器沒有自動打開，請複制並轉到以下URL：")
         print(f"\t（亮色主题）: http://localhost:{PORT}")
         print(f"\t（暗色主题）: http://localhost:{PORT}/?__theme=dark")
         def open():

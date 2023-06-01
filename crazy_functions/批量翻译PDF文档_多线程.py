@@ -12,8 +12,8 @@ def 批量翻译PDF文档(txt, llm_kwargs, plugin_kwargs, chatbot, history, sys_
 
     # 基本信息：功能、贡献者
     chatbot.append([
-        "函数插件功能？",
-        "批量翻译PDF文档。函数插件贡献者: Binary-Husky"])
+        "函數插件功能？",
+        "批量翻譯PDF文檔。函數插件貢獻者: Binary-Husky"])
     yield from update_ui(chatbot=chatbot, history=history) # 刷新界面
 
     # 尝试导入依赖，如果缺少依赖，则给出安装建议
@@ -22,8 +22,8 @@ def 批量翻译PDF文档(txt, llm_kwargs, plugin_kwargs, chatbot, history, sys_
         import tiktoken
     except:
         report_execption(chatbot, history,
-                         a=f"解析项目: {txt}",
-                         b=f"导入软件依赖失败。使用该模块需要额外依赖，安装方法```pip install --upgrade pymupdf tiktoken```。")
+                         a=f"解析項目: {txt}",
+                         b=f"導入軟件依賴失敗。使用該模塊需要額外依賴，安裝方法```pip install --upgrade pymupdf tiktoken```。")
         yield from update_ui(chatbot=chatbot, history=history) # 刷新界面
         return
 
@@ -35,9 +35,9 @@ def 批量翻译PDF文档(txt, llm_kwargs, plugin_kwargs, chatbot, history, sys_
         project_folder = txt
     else:
         if txt == "":
-            txt = '空空如也的输入栏'
+            txt = '空空如也的輸入欄'
         report_execption(chatbot, history,
-                         a=f"解析项目: {txt}", b=f"找不到本地项目或无权访问: {txt}")
+                         a=f"解析項目: {txt}", b=f"找不到本地項目或無權訪問: {txt}")
         yield from update_ui(chatbot=chatbot, history=history) # 刷新界面
         return
 
@@ -48,7 +48,7 @@ def 批量翻译PDF文档(txt, llm_kwargs, plugin_kwargs, chatbot, history, sys_
     # 如果没找到任何文件
     if len(file_manifest) == 0:
         report_execption(chatbot, history,
-                         a=f"解析项目: {txt}", b=f"找不到任何.tex或.pdf文件: {txt}")
+                         a=f"解析項目: {txt}", b=f"找不到任何.tex或.pdf文件: {txt}")
         yield from update_ui(chatbot=chatbot, history=history) # 刷新界面
         return
 
@@ -84,8 +84,8 @@ def 解析PDF(file_manifest, project_folder, llm_kwargs, plugin_kwargs, chatbot,
         
         # 单线，获取文章meta信息
         paper_meta_info = yield from request_gpt_model_in_new_thread_with_ui_alive(
-            inputs=f"以下是一篇学术论文的基础信息，请从中提取出“标题”、“收录会议或期刊”、“作者”、“摘要”、“编号”、“作者邮箱”这六个部分。请用markdown格式输出，最后用中文翻译摘要部分。请提取：{paper_meta}",
-            inputs_show_user=f"请从{fp}中提取出“标题”、“收录会议或期刊”等基本信息。",
+            inputs=f"以下是一篇學術論文的基礎信息，請從中提取出“標題”、“收錄會議或期刊”、“作者”、“摘要”、“編號”、“作者郵箱”這六個部分。請用markdown格式輸出，最後用中文翻譯摘要部分。請提取：{paper_meta}",
+            inputs_show_user=f"請從{fp}中提取出“標題”、“收錄會議或期刊”等基本信息。",
             llm_kwargs=llm_kwargs,
             chatbot=chatbot, history=[],
             sys_prompt="Your job is to collect information from materials。",
@@ -94,30 +94,30 @@ def 解析PDF(file_manifest, project_folder, llm_kwargs, plugin_kwargs, chatbot,
         # 多线，翻译
         gpt_response_collection = yield from request_gpt_model_multi_threads_with_very_awesome_ui_and_high_efficiency(
             inputs_array=[
-                f"你需要翻译以下内容：\n{frag}" for frag in paper_fragments],
-            inputs_show_user_array=[f"\n---\n 原文： \n\n {frag.replace('#', '')}  \n---\n 翻译：\n " for frag in paper_fragments],
+                f"你需要翻譯以下內容：\n{frag}" for frag in paper_fragments],
+            inputs_show_user_array=[f"\n---\n 原文： \n\n {frag.replace('#', '')}  \n---\n 翻譯：\n " for frag in paper_fragments],
             llm_kwargs=llm_kwargs,
             chatbot=chatbot,
             history_array=[[paper_meta] for _ in paper_fragments],
             sys_prompt_array=[
-                "请你作为一个学术翻译，负责把学术论文准确翻译成中文。注意文章中的每一句话都要翻译。" for _ in paper_fragments],
+                "請你作為一個學術翻譯，負責把學術論文準確翻譯成繁體中文。注意文章中的每一句話都要翻譯。" for _ in paper_fragments],
             # max_workers=5  # OpenAI所允许的最大并行过载
         )
         gpt_response_collection_md = copy.deepcopy(gpt_response_collection)
         # 整理报告的格式
         for i,k in enumerate(gpt_response_collection_md): 
             if i%2==0:
-                gpt_response_collection_md[i] = f"\n\n---\n\n ## 原文[{i//2}/{len(gpt_response_collection_md)//2}]： \n\n {paper_fragments[i//2].replace('#', '')}  \n\n---\n\n ## 翻译[{i//2}/{len(gpt_response_collection_md)//2}]：\n "
+                gpt_response_collection_md[i] = f"\n\n---\n\n ## 原文[{i//2}/{len(gpt_response_collection_md)//2}]： \n\n {paper_fragments[i//2].replace('#', '')}  \n\n---\n\n ## 翻譯[{i//2}/{len(gpt_response_collection_md)//2}]：\n "
             else:
                 gpt_response_collection_md[i] = gpt_response_collection_md[i]
-        final = ["一、论文概况\n\n---\n\n", paper_meta_info.replace('# ', '### ') + '\n\n---\n\n', "二、论文翻译", ""]
+        final = ["一、論文概況\n\n---\n\n", paper_meta_info.replace('# ', '### ') + '\n\n---\n\n', "二、論文翻譯", ""]
         final.extend(gpt_response_collection_md)
         create_report_file_name = f"{os.path.basename(fp)}.trans.md"
         res = write_results_to_file(final, file_name=create_report_file_name)
 
         # 更新UI
         generated_conclusion_files.append(f'./gpt_log/{create_report_file_name}')
-        chatbot.append((f"{fp}完成了吗？", res))
+        chatbot.append((f"{fp}完成了嗎？", res))
         yield from update_ui(chatbot=chatbot, history=history) # 刷新界面
 
         # write html
@@ -131,7 +131,7 @@ def 解析PDF(file_manifest, project_folder, llm_kwargs, plugin_kwargs, chatbot,
                     gpt_response_collection_html[i] = paper_fragments[i//2].replace('#', '')
                 else:
                     gpt_response_collection_html[i] = gpt_response_collection_html[i]
-            final = ["论文概况", paper_meta_info.replace('# ', '### '),  "二、论文翻译",  ""]
+            final = ["論文概況", paper_meta_info.replace('# ', '### '),  "二、論文翻譯",  ""]
             final.extend(gpt_response_collection_html)
             for i, k in enumerate(final): 
                 if i%2==0:
@@ -150,7 +150,7 @@ def 解析PDF(file_manifest, project_folder, llm_kwargs, plugin_kwargs, chatbot,
     import shutil
     for pdf_path in generated_conclusion_files:
         # 重命名文件
-        rename_file = f'./gpt_log/翻译-{os.path.basename(pdf_path)}'
+        rename_file = f'./gpt_log/翻譯-{os.path.basename(pdf_path)}'
         if os.path.exists(rename_file):
             os.remove(rename_file)
         shutil.copyfile(pdf_path, rename_file)
@@ -158,13 +158,13 @@ def 解析PDF(file_manifest, project_folder, llm_kwargs, plugin_kwargs, chatbot,
             os.remove(pdf_path)
     for html_path in generated_html_files:
         # 重命名文件
-        rename_file = f'./gpt_log/翻译-{os.path.basename(html_path)}'
+        rename_file = f'./gpt_log/翻譯-{os.path.basename(html_path)}'
         if os.path.exists(rename_file):
             os.remove(rename_file)
         shutil.copyfile(html_path, rename_file)
         if os.path.exists(html_path):
             os.remove(html_path)
-    chatbot.append(("给出输出文件清单", str(generated_conclusion_files + generated_html_files)))
+    chatbot.append(("給出輸出文件清單", str(generated_conclusion_files + generated_html_files)))
     yield from update_ui(chatbot=chatbot, history=history) # 刷新界面
 
 
@@ -194,7 +194,7 @@ class construct_html():
   padding: 5px;
 }
         """
-        self.html_string = f'<!DOCTYPE html><head><meta charset="utf-8"><title>翻译结果</title><style>{self.css}</style></head>'
+        self.html_string = f'<!DOCTYPE html><head><meta charset="utf-8"><title>翻譯結果</title><style>{self.css}</style></head>'
 
 
     def add_row(self, a, b):

@@ -53,15 +53,15 @@ def 图片生成(prompt, llm_kwargs, plugin_kwargs, chatbot, history, system_pro
     web_port        当前软件运行的端口号
     """
     history = []    # 清空历史，以免输入溢出
-    chatbot.append(("这是什么功能？", "[Local Message] 生成图像, 请先把模型切换至gpt-xxxx或者api2d-xxxx。如果中文效果不理想, 尝试Prompt。正在处理中 ....."))
+    chatbot.append(("這是什麼功能？", "[Local Message] 生成圖像, 請先把模型切換至gpt-xxxx或者api2d-xxxx。如果中文效果不理想, 嘗試Prompt。正在處理中 ....."))
     yield from update_ui(chatbot=chatbot, history=history) # 刷新界面 # 由于请求gpt需要一段时间，我们先及时地做一次界面更新
     if ("advanced_arg" in plugin_kwargs) and (plugin_kwargs["advanced_arg"] == ""): plugin_kwargs.pop("advanced_arg")
     resolution = plugin_kwargs.get("advanced_arg", '256x256')
     image_url, image_path = gen_image(llm_kwargs, prompt, resolution)
     chatbot.append([prompt,  
-        f'图像中转网址: <br/>`{image_url}`<br/>'+
-        f'中转网址预览: <br/><div align="center"><img src="{image_url}"></div>'
+        f'圖像中轉網址: <br/>`{image_url}`<br/>'+
+        f'中轉網址預覽: <br/><div align="center"><img src="{image_url}"></div>'
         f'本地文件地址: <br/>`{image_path}`<br/>'+
-        f'本地文件预览: <br/><div align="center"><img src="file={image_path}"></div>'
+        f'本地文件預覽: <br/><div align="center"><img src="file={image_path}"></div>'
     ])
     yield from update_ui(chatbot=chatbot, history=history) # 刷新界面 # 界面更新

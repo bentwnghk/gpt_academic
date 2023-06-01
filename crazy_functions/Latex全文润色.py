@@ -93,13 +93,13 @@ def 多文件润色(file_manifest, project_folder, llm_kwargs, plugin_kwargs, ch
         sys_prompt_array = ["You are a professional academic paper writer." for _ in range(n_split)]
     elif language == 'zh':
         if mode == 'polish':
-            inputs_array = [f"以下是一篇学术论文中的一段内容，请将此部分润色以满足学术标准，提高语法、清晰度和整体可读性，不要修改任何LaTeX命令，例如\section，\cite和方程式：" + 
+            inputs_array = [f"以下是一篇學術論文中的一段內容，請將此部分潤色以滿足學術標準，提高語法、清晰度和整體可讀性，不要修改任何LaTeX命令，例如\section，\cite和方程式：" + 
                             f"\n\n{frag}" for frag in pfg.sp_file_contents]
         else:
-            inputs_array = [f"以下是一篇学术论文中的一段内容，请对这部分内容进行语法矫正。不要修改任何LaTeX命令，例如\section，\cite和方程式：" + 
+            inputs_array = [f"以下是一篇學術論文中的一段內容，請對這部分內容進行語法矯正。不要修改任何LaTeX命令，例如\section，\cite和方程式：" + 
                             f"\n\n{frag}" for frag in pfg.sp_file_contents] 
-        inputs_show_user_array = [f"润色 {f}" for f in pfg.sp_file_tag]
-        sys_prompt_array=["你是一位专业的中文学术论文作家。" for _ in range(n_split)]
+        inputs_show_user_array = [f"潤色 {f}" for f in pfg.sp_file_tag]
+        sys_prompt_array=["你是一位專業的中文學術論文作家。" for _ in range(n_split)]
 
 
     gpt_response_collection = yield from request_gpt_model_multi_threads_with_very_awesome_ui_and_high_efficiency(
@@ -128,7 +128,7 @@ def 多文件润色(file_manifest, project_folder, llm_kwargs, plugin_kwargs, ch
     create_report_file_name = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()) + f"-chatgpt.polish.md"
     res = write_results_to_file(gpt_response_collection, file_name=create_report_file_name)
     history = gpt_response_collection
-    chatbot.append((f"{fp}完成了吗？", res))
+    chatbot.append((f"{fp}完成了嗎？", res))
     yield from update_ui(chatbot=chatbot, history=history) # 刷新界面
 
 
@@ -136,8 +136,8 @@ def 多文件润色(file_manifest, project_folder, llm_kwargs, plugin_kwargs, ch
 def Latex英文润色(txt, llm_kwargs, plugin_kwargs, chatbot, history, system_prompt, web_port):
     # 基本信息：功能、贡献者
     chatbot.append([
-        "函数插件功能？",
-        "对整个Latex项目进行润色。函数插件贡献者: Binary-Husky"])
+        "函數插件功能？",
+        "對整個Latex項目進行潤色。函數插件貢獻者: Binary-Husky"])
     yield from update_ui(chatbot=chatbot, history=history) # 刷新界面
 
     # 尝试导入依赖，如果缺少依赖，则给出安装建议
@@ -145,8 +145,8 @@ def Latex英文润色(txt, llm_kwargs, plugin_kwargs, chatbot, history, system_p
         import tiktoken
     except:
         report_execption(chatbot, history,
-                         a=f"解析项目: {txt}",
-                         b=f"导入软件依赖失败。使用该模块需要额外依赖，安装方法```pip install --upgrade tiktoken```。")
+                         a=f"解析項目: {txt}",
+                         b=f"導入軟件依賴失敗。使用該模塊需要額外依賴，安裝方法```pip install --upgrade tiktoken```。")
         yield from update_ui(chatbot=chatbot, history=history) # 刷新界面
         return
     history = []    # 清空历史，以免输入溢出
@@ -154,13 +154,13 @@ def Latex英文润色(txt, llm_kwargs, plugin_kwargs, chatbot, history, system_p
     if os.path.exists(txt):
         project_folder = txt
     else:
-        if txt == "": txt = '空空如也的输入栏'
-        report_execption(chatbot, history, a = f"解析项目: {txt}", b = f"找不到本地项目或无权访问: {txt}")
+        if txt == "": txt = '空空如也的輸入欄'
+        report_execption(chatbot, history, a = f"解析項目: {txt}", b = f"找不到本地項目或無權訪問: {txt}")
         yield from update_ui(chatbot=chatbot, history=history) # 刷新界面
         return
     file_manifest = [f for f in glob.glob(f'{project_folder}/**/*.tex', recursive=True)]
     if len(file_manifest) == 0:
-        report_execption(chatbot, history, a = f"解析项目: {txt}", b = f"找不到任何.tex文件: {txt}")
+        report_execption(chatbot, history, a = f"解析項目: {txt}", b = f"找不到任何.tex文件: {txt}")
         yield from update_ui(chatbot=chatbot, history=history) # 刷新界面
         return
     yield from 多文件润色(file_manifest, project_folder, llm_kwargs, plugin_kwargs, chatbot, history, system_prompt, language='en')
@@ -174,8 +174,8 @@ def Latex英文润色(txt, llm_kwargs, plugin_kwargs, chatbot, history, system_p
 def Latex中文润色(txt, llm_kwargs, plugin_kwargs, chatbot, history, system_prompt, web_port):
     # 基本信息：功能、贡献者
     chatbot.append([
-        "函数插件功能？",
-        "对整个Latex项目进行润色。函数插件贡献者: Binary-Husky"])
+        "函數插件功能？",
+        "對整個Latex項目進行潤色。函數插件貢獻者: Binary-Husky"])
     yield from update_ui(chatbot=chatbot, history=history) # 刷新界面
 
     # 尝试导入依赖，如果缺少依赖，则给出安装建议
@@ -183,8 +183,8 @@ def Latex中文润色(txt, llm_kwargs, plugin_kwargs, chatbot, history, system_p
         import tiktoken
     except:
         report_execption(chatbot, history,
-                         a=f"解析项目: {txt}",
-                         b=f"导入软件依赖失败。使用该模块需要额外依赖，安装方法```pip install --upgrade tiktoken```。")
+                         a=f"解析項目: {txt}",
+                         b=f"導入軟件依賴失敗。使用該模塊需要額外依賴，安裝方法```pip install --upgrade tiktoken```。")
         yield from update_ui(chatbot=chatbot, history=history) # 刷新界面
         return
     history = []    # 清空历史，以免输入溢出
@@ -192,13 +192,13 @@ def Latex中文润色(txt, llm_kwargs, plugin_kwargs, chatbot, history, system_p
     if os.path.exists(txt):
         project_folder = txt
     else:
-        if txt == "": txt = '空空如也的输入栏'
-        report_execption(chatbot, history, a = f"解析项目: {txt}", b = f"找不到本地项目或无权访问: {txt}")
+        if txt == "": txt = '空空如也的輸入欄'
+        report_execption(chatbot, history, a = f"解析項目: {txt}", b = f"找不到本地項目或無權訪問: {txt}")
         yield from update_ui(chatbot=chatbot, history=history) # 刷新界面
         return
     file_manifest = [f for f in glob.glob(f'{project_folder}/**/*.tex', recursive=True)]
     if len(file_manifest) == 0:
-        report_execption(chatbot, history, a = f"解析项目: {txt}", b = f"找不到任何.tex文件: {txt}")
+        report_execption(chatbot, history, a = f"解析項目: {txt}", b = f"找不到任何.tex文件: {txt}")
         yield from update_ui(chatbot=chatbot, history=history) # 刷新界面
         return
     yield from 多文件润色(file_manifest, project_folder, llm_kwargs, plugin_kwargs, chatbot, history, system_prompt, language='zh')
@@ -210,8 +210,8 @@ def Latex中文润色(txt, llm_kwargs, plugin_kwargs, chatbot, history, system_p
 def Latex英文纠错(txt, llm_kwargs, plugin_kwargs, chatbot, history, system_prompt, web_port):
     # 基本信息：功能、贡献者
     chatbot.append([
-        "函数插件功能？",
-        "对整个Latex项目进行纠错。函数插件贡献者: Binary-Husky"])
+        "函數插件功能？",
+        "對整個Latex項目進行糾錯。函數插件貢獻者: Binary-Husky"])
     yield from update_ui(chatbot=chatbot, history=history) # 刷新界面
 
     # 尝试导入依赖，如果缺少依赖，则给出安装建议
@@ -219,8 +219,8 @@ def Latex英文纠错(txt, llm_kwargs, plugin_kwargs, chatbot, history, system_p
         import tiktoken
     except:
         report_execption(chatbot, history,
-                         a=f"解析项目: {txt}",
-                         b=f"导入软件依赖失败。使用该模块需要额外依赖，安装方法```pip install --upgrade tiktoken```。")
+                         a=f"解析項目: {txt}",
+                         b=f"導入軟件依賴失敗。使用該模塊需要額外依賴，安裝方法```pip install --upgrade tiktoken```。")
         yield from update_ui(chatbot=chatbot, history=history) # 刷新界面
         return
     history = []    # 清空历史，以免输入溢出
@@ -228,13 +228,13 @@ def Latex英文纠错(txt, llm_kwargs, plugin_kwargs, chatbot, history, system_p
     if os.path.exists(txt):
         project_folder = txt
     else:
-        if txt == "": txt = '空空如也的输入栏'
-        report_execption(chatbot, history, a = f"解析项目: {txt}", b = f"找不到本地项目或无权访问: {txt}")
+        if txt == "": txt = '空空如也的輸入欄'
+        report_execption(chatbot, history, a = f"解析項目: {txt}", b = f"找不到本地項目或無權訪問: {txt}")
         yield from update_ui(chatbot=chatbot, history=history) # 刷新界面
         return
     file_manifest = [f for f in glob.glob(f'{project_folder}/**/*.tex', recursive=True)]
     if len(file_manifest) == 0:
-        report_execption(chatbot, history, a = f"解析项目: {txt}", b = f"找不到任何.tex文件: {txt}")
+        report_execption(chatbot, history, a = f"解析項目: {txt}", b = f"找不到任何.tex文件: {txt}")
         yield from update_ui(chatbot=chatbot, history=history) # 刷新界面
         return
     yield from 多文件润色(file_manifest, project_folder, llm_kwargs, plugin_kwargs, chatbot, history, system_prompt, language='en', mode='proofread')

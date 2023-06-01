@@ -39,15 +39,15 @@ def 解析docx(file_manifest, project_folder, llm_kwargs, plugin_kwargs, chatbot
         )
         this_paper_history = []
         for i, paper_frag in enumerate(paper_fragments):
-            i_say = f'请对下面的文章片段用中文做概述，文件名是{os.path.relpath(fp, project_folder)}，文章内容是 ```{paper_frag}```'
-            i_say_show_user = f'请对下面的文章片段做概述: {os.path.abspath(fp)}的第{i+1}/{len(paper_fragments)}个片段。'
+            i_say = f'請對下面的文章片段用繁體中文做概述，文件名是{os.path.relpath(fp, project_folder)}，文章内容是 ```{paper_frag}```'
+            i_say_show_user = f'请对下面的文章片段做概述: {os.path.abspath(fp)}的第{i+1}/{len(paper_fragments)}個片段。'
             gpt_say = yield from request_gpt_model_in_new_thread_with_ui_alive(
                 inputs=i_say, 
                 inputs_show_user=i_say_show_user, 
                 llm_kwargs=llm_kwargs,
                 chatbot=chatbot, 
                 history=[],
-                sys_prompt="总结文章。"
+                sys_prompt="總結文章。"
             )
 
             chatbot[-1] = (i_say_show_user, gpt_say)
@@ -56,25 +56,25 @@ def 解析docx(file_manifest, project_folder, llm_kwargs, plugin_kwargs, chatbot
 
         # 已经对该文章的所有片段总结完毕，如果文章被切分了，
         if len(paper_fragments) > 1:
-            i_say = f"根据以上的对话，总结文章{os.path.abspath(fp)}的主要内容。"
+            i_say = f"根據以上的對話，總結文章{os.path.abspath(fp)}的主要内容。"
             gpt_say = yield from request_gpt_model_in_new_thread_with_ui_alive(
                 inputs=i_say, 
                 inputs_show_user=i_say, 
                 llm_kwargs=llm_kwargs,
                 chatbot=chatbot, 
                 history=this_paper_history,
-                sys_prompt="总结文章。"
+                sys_prompt="總結文章。"
             )
 
             history.extend([i_say,gpt_say])
             this_paper_history.extend([i_say,gpt_say])
 
         res = write_results_to_file(history)
-        chatbot.append(("完成了吗？", res))
+        chatbot.append(("完成了嗎？", res))
         yield from update_ui(chatbot=chatbot, history=history) # 刷新界面
 
     res = write_results_to_file(history)
-    chatbot.append(("所有文件都总结完成了吗？", res))
+    chatbot.append(("所有文件都總結完成了嗎？", res))
     yield from update_ui(chatbot=chatbot, history=history) # 刷新界面
 
 
@@ -84,8 +84,8 @@ def 总结word文档(txt, llm_kwargs, plugin_kwargs, chatbot, history, system_pr
 
     # 基本信息：功能、贡献者
     chatbot.append([
-        "函数插件功能？",
-        "批量总结Word文档。函数插件贡献者: JasonGuo1。注意, 如果是.doc文件, 请先转化为.docx格式。"])
+        "函數插件功能？",
+        "批量總結Word文檔。函數插件貢獻者: JasonGuo1。注意, 如果是.doc文件, 請先轉化為.docx格式。"])
     yield from update_ui(chatbot=chatbot, history=history) # 刷新界面
 
     # 尝试导入依赖，如果缺少依赖，则给出安装建议
@@ -93,8 +93,8 @@ def 总结word文档(txt, llm_kwargs, plugin_kwargs, chatbot, history, system_pr
         from docx import Document
     except:
         report_execption(chatbot, history,
-                         a=f"解析项目: {txt}",
-                         b=f"导入软件依赖失败。使用该模块需要额外依赖，安装方法```pip install --upgrade python-docx pywin32```。")
+                         a=f"解析項目: {txt}",
+                         b=f"導入軟件依賴失敗。使用該模塊需要額外依賴，安裝方法```pip install --upgrade python-docx pywin32```。")
         yield from update_ui(chatbot=chatbot, history=history) # 刷新界面
         return
 
@@ -105,8 +105,8 @@ def 总结word文档(txt, llm_kwargs, plugin_kwargs, chatbot, history, system_pr
     if os.path.exists(txt):
         project_folder = txt
     else:
-        if txt == "": txt = '空空如也的输入栏'
-        report_execption(chatbot, history, a=f"解析项目: {txt}", b=f"找不到本地项目或无权访问: {txt}")
+        if txt == "": txt = '空空如也的輸入欄'
+        report_execption(chatbot, history, a=f"解析項目: {txt}", b=f"找不到本地項目或無權訪問: {txt}")
         yield from update_ui(chatbot=chatbot, history=history) # 刷新界面
         return
 

@@ -105,13 +105,13 @@ def predict(inputs, llm_kwargs, plugin_kwargs, chatbot, history=[], system_promp
     raw_input = "What I would like to say is the following: " + inputs
     history.extend([inputs, ""])
     chatbot.append([inputs, ""])
-    yield from update_ui(chatbot=chatbot, history=history, msg="等待响应") # 刷新界面
+    yield from update_ui(chatbot=chatbot, history=history, msg="等待響應") # 刷新界面
 
     prompt = raw_input
     tgui_say = ""
 
     model_name, addr_port = llm_kwargs['llm_model'].split('@')
-    assert ':' in addr_port, "LLM_MODEL 格式不正确！" + llm_kwargs['llm_model']
+    assert ':' in addr_port, "LLM_MODEL 格式不正確！" + llm_kwargs['llm_model']
     addr, port = addr_port.split(':')
 
 
@@ -151,7 +151,7 @@ def predict_no_ui_long_connection(inputs, llm_kwargs, history, sys_prompt, obser
     prompt = raw_input
     tgui_say = ""
     model_name, addr_port = llm_kwargs['llm_model'].split('@')
-    assert ':' in addr_port, "LLM_MODEL 格式不正确！" + llm_kwargs['llm_model']
+    assert ':' in addr_port, "LLM_MODEL 格式不正確！" + llm_kwargs['llm_model']
     addr, port = addr_port.split(':')
 
 
