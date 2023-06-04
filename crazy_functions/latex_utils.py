@@ -160,16 +160,7 @@ class LatexPaperSplit():
                         if not res: break
                         before = res.string[:res.span()[0]]
                         this = res.group(0)
-                        # core = res.group(1)
                         after = res.string[res.span()[1]:]
-                        # ======
-                        if before.endswith('\n'):
-                            this = '\n' + this
-                            before = before[:-1]
-                        if after.startswith('\n'):
-                            # move \n
-                            this = this + '\n'
-                            after = after[1:]
                         # ======
                         lt.string = before
                         tmp  = lt.next
@@ -210,17 +201,13 @@ class LatexPaperSplit():
                             return False
                         # ======
                         # search for first encounter of \begin \end pair with less than 25 lines in the middle
-                        this = search_with_line_limit(target_string) 
-                        if not this: break
-                        before, after = target_string.split(this)
-                        # ======
-                        if before.endswith('\n'):
-                            this = '\n' + this
-                            before = before[:-1]
-                        if after.startswith('\n'):
-                            # move \n
-                            this = this + '\n'
-                            after = after[1:]
+                        ps = search_with_line_limit(target_string) 
+                        if not ps: break
+                        res = re.search(re.escape(ps), target_string, flags)
+                        if not res: assert False
+                        before = res.string[:res.span()[0]]
+                        this = res.group(0)
+                        after = res.string[res.span()[1]:]
                         # ======
                         lt.string = before
                         tmp  = lt.next
@@ -241,7 +228,8 @@ class LatexPaperSplit():
 
         # root 是链表的头
         print('正在分解Latex源文件，构建链表结构')
-
+        # 删除iffalse注释
+        split_worker(root, r"\\iffalse(.*?)\\fi", re.DOTALL)
         # 吸收在25行以内的begin-end组合
         split_worker_begin_end(root, r"\\begin\{([a-z\*]*)\}(.*?)\\end\{\1\}", re.DOTALL, limit_n_lines=25)
         # 吸收其他杂项
@@ -356,7 +344,7 @@ class LatexPaperSplit():
                 show_html = node.string.replace('\n','<br/>')
                 if not node.preserve:
                     res_to_t.append(node.string)
-                    f.write(f'<p style="color:black;">{show_html}</p>')
+                    f.write(f'<p style="color:black;">#{show_html}#</p>')
                 else:
                     f.write(f'<p style="color:red;">{show_html}</p>')
                 node = node.next
