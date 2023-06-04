@@ -18,7 +18,7 @@ def 寻找Latex主文件(file_manifest, mode):
             return texf
         else:
             continue
-    raise RuntimeError('无法找到一个主Tex文件（包含documentclass关键字）')
+    raise RuntimeError('無法找到一個主Tex文件（包含documentclass關鍵字）')
 
 def merge_tex_files_(project_foler, main_file, mode):
     """
@@ -135,10 +135,10 @@ class LatexPaperSplit():
                 match = pattern.search(result_string)
                 position = match.end()
                 result_string = result_string[:position] + \
-                    "\\textbf{警告：该PDF由GPT-Academic开源项目调用大语言模型+Latex翻译插件一键生成，其内容可靠性没有任何保障，请仔细鉴别并以原文为准。" + \
-                    "项目Github地址 \\url{https://github.com/binary-husky/gpt_academic/}。"            + \
+                    "\\textbf{警告：該PDF由GPT-Academic開源項目調用大語言模型+Latex翻譯插件一鍵生成，其內容可靠性沒有任何保障，請仔細鑑別並以原文為準。" + \
+                    "項目地址 \\url{https://ai6.mister5.net/}。"            + \
                     msg + \
-                    "为了防止大语言模型的意外谬误产生扩散影响，禁止移除或修改此警告。}\\\\"    + \
+                    "為了防止大語言模型的意外謬誤產生擴散影響，禁止移除或修改此警告。}\\\\"    + \
                     result_string[position:]
             except:
                 pass
@@ -227,7 +227,7 @@ class LatexPaperSplit():
 
 
         # root 是链表的头
-        print('正在分解Latex源文件，构建链表结构')
+        print('正在分解Latex源文件，構建鍊錶結構')
         # 删除iffalse注释
         split_worker(root, r"\\iffalse(.*?)\\fi", re.DOTALL)
         # 吸收在25行以内的begin-end组合
@@ -414,7 +414,7 @@ def Latex精细分解与转化(file_manifest, project_folder, llm_kwargs, plugin
 
     #  <-------- 寻找主tex文件 ----------> 
     maintex = 寻找Latex主文件(file_manifest, mode)
-    chatbot.append((f"定位主Latex文件", f'[Local Message] 分析结果：该项目的Latex主文件是{maintex}, 如果分析错误, 请立即终止程序, 删除或修改歧义文件, 然后重试。主程序即将开始, 请稍候。'))
+    chatbot.append((f"定位主Latex文件", f'[Local Message] 分析結果：該項目的Latex主文件是{maintex}, 如果分析錯誤, 請立即終止程序, 刪除或修改歧義文件, 然後重試。主程序即將開始, 請稍候。'))
     yield from update_ui(chatbot=chatbot, history=history) # 刷新界面
     time.sleep(5)
 
@@ -482,13 +482,13 @@ def Latex精细分解与转化(file_manifest, project_folder, llm_kwargs, plugin
 
 
     #  <-------- 写出文件 ----------> 
-    msg = f"当前大语言模型: {llm_kwargs['llm_model']}，当前语言模型温度设定: {llm_kwargs['temperature']}。"
+    msg = f"當前大語言模型: {llm_kwargs['llm_model']}，當前語言模型溫度設定: {llm_kwargs['temperature']}。"
     final_tex = lps.merge_result(pfg.file_result, mode, msg)
     with open(project_folder + f'/merge_{mode}.tex', 'w', encoding='utf-8', errors='replace') as f:
         f.write(final_tex)
 
     #  <-------- 整理结果, 退出 ----------> 
-    chatbot.append((f"完成了吗？", 'GPT结果已输出, 正在编译PDF'))
+    chatbot.append((f"完成了嗎？", 'GPT結果已輸出, 正在編譯PDF'))
     yield from update_ui(chatbot=chatbot, history=history) # 刷新界面
 
     #  <-------- 返回 ----------> 
@@ -506,7 +506,7 @@ def remove_buggy_lines(file_path, log_path, tex_name, tex_name_pure, n_fix, work
         buggy_lines = re.findall(tex_name+':([0-9]{1,5}):', log)
         buggy_lines = [int(l) for l in buggy_lines]
         buggy_lines = sorted(buggy_lines)
-        print("removing lines that has errors", buggy_lines)
+        print("removing lines that have errors", buggy_lines)
         file_lines.pop(buggy_lines[0]-1)
         with open(pj(work_folder_modified, f"{tex_name_pure}_fix_{n_fix}.tex"), 'w', encoding='utf-8', errors='replace') as f:
             f.writelines(file_lines)
@@ -532,36 +532,36 @@ def 编译Latex差别(chatbot, history, main_file_original, main_file_modified, 
     import os, time
     current_dir = os.getcwd()
     n_fix = 0
-    chatbot.append([f"正在编译PDF文档", f'编译已经开始。当前工作路径为{work_folder}，如果程序停顿5分钟以上，则大概率是卡死在Latex里面了。不幸卡死时请直接去该路径下取回翻译结果，或者重启之后再度尝试 ...']); yield from update_ui(chatbot=chatbot, history=history)
-    chatbot.append([f"正在编译PDF文档", '...']); yield from update_ui(chatbot=chatbot, history=history); time.sleep(1); chatbot[-1] = list(chatbot[-1]) # 刷新界面
-    yield from update_ui_lastest_msg('编译已经开始...', chatbot, history)   # 刷新Gradio前端界面
+    chatbot.append([f"正在編譯PDF文檔", f'編譯已經開始。當前工作路徑為{work_folder}，如果程序停頓5分鐘以上，則大概率是卡死在Latex裡面了。不幸卡死時請直接去該路徑下取回翻譯結果，或者重啟之後再度嘗試 ...']); yield from update_ui(chatbot=chatbot, history=history)
+    chatbot.append([f"正在編譯PDF文檔", '...']); yield from update_ui(chatbot=chatbot, history=history); time.sleep(1); chatbot[-1] = list(chatbot[-1]) # 刷新界面
+    yield from update_ui_lastest_msg('編譯已經開始...', chatbot, history)   # 刷新Gradio前端界面
 
     while True:
         import os
         # https://stackoverflow.com/questions/738755/dont-make-me-manually-abort-a-latex-compile-when-theres-an-error
-        yield from update_ui_lastest_msg(f'尝试第{n_fix}次编译, 编译原始PDF ...', chatbot, history)   # 刷新Gradio前端界面
+        yield from update_ui_lastest_msg(f'嘗試第{n_fix}次編譯, 編譯原始PDF...', chatbot, history)   # 刷新Gradio前端界面
         os.chdir(work_folder_original); ok = compile_latex_with_timeout(f'pdflatex -interaction=batchmode -file-line-error {main_file_original}.tex'); os.chdir(current_dir)
 
-        yield from update_ui_lastest_msg(f'尝试第{n_fix}次编译, 编译转化后的PDF ...', chatbot, history)   # 刷新Gradio前端界面
+        yield from update_ui_lastest_msg(f'嘗試第{n_fix}次編譯, 編譯轉化後的PDF...', chatbot, history)   # 刷新Gradio前端界面
         os.chdir(work_folder_modified); ok = compile_latex_with_timeout(f'pdflatex -interaction=batchmode -file-line-error {main_file_modified}.tex'); os.chdir(current_dir)
         
         if ok:
             # 只有第二步成功，才能继续下面的步骤
-            yield from update_ui_lastest_msg(f'尝试第{n_fix}次编译, 编译BibTex ...', chatbot, history)    # 刷新Gradio前端界面
+            yield from update_ui_lastest_msg(f'嘗試第{n_fix}次編譯, 編譯BibTex...', chatbot, history)    # 刷新Gradio前端界面
             os.chdir(work_folder_original); ok = compile_latex_with_timeout(f'bibtex  {main_file_original}.aux'); os.chdir(current_dir)
             os.chdir(work_folder_modified); ok = compile_latex_with_timeout(f'bibtex  {main_file_modified}.aux'); os.chdir(current_dir)
 
-            yield from update_ui_lastest_msg(f'尝试第{n_fix}次编译, 编译文献交叉引用 ...', chatbot, history)  # 刷新Gradio前端界面
+            yield from update_ui_lastest_msg(f'嘗試第{n_fix}次編譯, 編譯文獻交叉引用...', chatbot, history)  # 刷新Gradio前端界面
             os.chdir(work_folder_original); ok = compile_latex_with_timeout(f'pdflatex -interaction=batchmode -file-line-error {main_file_original}.tex'); os.chdir(current_dir)
             os.chdir(work_folder_modified); ok = compile_latex_with_timeout(f'pdflatex -interaction=batchmode -file-line-error {main_file_modified}.tex'); os.chdir(current_dir)
             os.chdir(work_folder_original); ok = compile_latex_with_timeout(f'pdflatex -interaction=batchmode -file-line-error {main_file_original}.tex'); os.chdir(current_dir)
             os.chdir(work_folder_modified); ok = compile_latex_with_timeout(f'pdflatex -interaction=batchmode -file-line-error {main_file_modified}.tex'); os.chdir(current_dir)
 
-            yield from update_ui_lastest_msg(f'尝试第{n_fix}次编译, 使用latexdiff生成论文转化前后对比 ...', chatbot, history) # 刷新Gradio前端界面
+            yield from update_ui_lastest_msg(f'嘗試第{n_fix}次編譯, 使用latexdiff生成論文轉化前後對比...', chatbot, history) # 刷新Gradio前端界面
             print(    f'latexdiff --encoding=utf8 --append-safecmd=subfile {work_folder_original}/{main_file_original}.tex  {work_folder_modified}/{main_file_modified}.tex --flatten > {work_folder}/merge_diff.tex')
             ok = compile_latex_with_timeout(f'latexdiff --encoding=utf8 --append-safecmd=subfile {work_folder_original}/{main_file_original}.tex  {work_folder_modified}/{main_file_modified}.tex --flatten > {work_folder}/merge_diff.tex')
 
-            yield from update_ui_lastest_msg(f'尝试第{n_fix}次编译, 正在编译对比PDF ...', chatbot, history)   # 刷新Gradio前端界面
+            yield from update_ui_lastest_msg(f'嘗試第{n_fix}次編譯, 正在編譯對比PDF...', chatbot, history)   # 刷新Gradio前端界面
             os.chdir(work_folder); ok = compile_latex_with_timeout(f'pdflatex  -interaction=batchmode -file-line-error merge_diff.tex'); os.chdir(current_dir)
             os.chdir(work_folder); ok = compile_latex_with_timeout(f'bibtex    merge_diff.aux'); os.chdir(current_dir)
             os.chdir(work_folder); ok = compile_latex_with_timeout(f'pdflatex  -interaction=batchmode -file-line-error merge_diff.tex'); os.chdir(current_dir)
@@ -575,13 +575,13 @@ def 编译Latex差别(chatbot, history, main_file_original, main_file_modified, 
         original_pdf_success = os.path.exists(pj(work_folder_original, f'{main_file_original}.pdf'))
         modified_pdf_success = os.path.exists(pj(work_folder_modified, f'{main_file_modified}.pdf'))
         diff_pdf_success     = os.path.exists(pj(work_folder, f'merge_diff.pdf'))
-        results_ += f"原始PDF编译是否成功: {original_pdf_success};" 
-        results_ += f"转化PDF编译是否成功: {modified_pdf_success};" 
-        results_ += f"对比PDF编译是否成功: {diff_pdf_success};" 
-        yield from update_ui_lastest_msg(f'第{n_fix}编译结束:<br/>{results_}...', chatbot, history) # 刷新Gradio前端界面
+        results_ += f"原始PDF編譯是否成功: {original_pdf_success};" 
+        results_ += f"轉化PDF編譯是否成功: {modified_pdf_success};" 
+        results_ += f"對比PDF編譯是否成功: {diff_pdf_success};" 
+        yield from update_ui_lastest_msg(f'第{n_fix}編譯結束:<br/>{results_}...', chatbot, history) # 刷新Gradio前端界面
 
         if modified_pdf_success:
-            yield from update_ui_lastest_msg(f'转化PDF编译已经成功, 即将退出 ...', chatbot, history)    # 刷新Gradio前端界面
+            yield from update_ui_lastest_msg(f'轉化PDF編譯已經成功, 即將退出...', chatbot, history)    # 刷新Gradio前端界面
             os.chdir(current_dir)
             return True # 成功啦
         else:
@@ -595,7 +595,7 @@ def 编译Latex差别(chatbot, history, main_file_original, main_file_modified, 
                 n_fix=n_fix,
                 work_folder_modified=work_folder_modified,
             )
-            yield from update_ui_lastest_msg(f'由于最为关键的转化PDF编译失败, 将根据报错信息修正tex源文件并重试, 当前报错的latex代码处于第{buggy_lines}行 ...', chatbot, history)   # 刷新Gradio前端界面
+            yield from update_ui_lastest_msg(f'由於最為關鍵的轉化PDF編譯失敗, 將根據報錯信息修正tex源文件並重試, 當前報錯的latex代碼處於第{buggy_lines}行...', chatbot, history)   # 刷新Gradio前端界面
             if not can_retry: break
 
     os.chdir(current_dir)

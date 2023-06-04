@@ -162,7 +162,7 @@ def get_reduce_token_percent(text):
         assert ratio > 0 and ratio < 1
         return ratio, str(int(current_tokens-max_limit))
     except:
-        return 0.5, '不详'
+        return 0.5, '不詳'
 
 
 def write_results_to_file(history, file_name=None):
@@ -390,7 +390,7 @@ def extract_archive(file_path, dest_dir):
                 rf.extractall(path=dest_dir)
                 print("Successfully extracted rar archive to {}".format(dest_dir))
         except:
-            print("Rar format requires additional dependencies to install")
+            print("rar format requires additional dependencies to install")
             return '\n\n需要安裝pip install rarfile來解壓rar文件'
 
     # 第三方库，需要预先pip install py7zr
@@ -466,7 +466,7 @@ def on_file_uploaded(files, chatbot, txt, txt2, checkboxes):
     chatbot.append(['我上傳了文件，請查收',
                     f'[Local Message] 收到以下文件: \n\n{moved_files_str}' +
                     f'\n\n調用路徑參數已自動修正到: \n\n{txt}' +
-                    f'\n\n現在您點擊任意“紅顏色”標識的函數插件時，以上文件將被作為輸入參數'+err_msg])
+                    f'\n\n現在您點擊任意紫色標識的函數插件時，以上文件將被作為輸入參數'+err_msg])
     return chatbot, txt, txt2
 
 
@@ -511,7 +511,7 @@ def what_keys(keys):
         if is_api2d_key(k): 
             avail_key_list['API2D Key'] += 1
 
-    return f"檢測到： OpenAI Key {avail_key_list['OpenAI Key']} 个，API2D Key {avail_key_list['API2D Key']} 个"
+    return f"檢測到： OpenAI Key {avail_key_list['OpenAI Key']} 個，API2D Key {avail_key_list['API2D Key']} 個"
 
 def select_api_key(keys, llm_model):
     import random
@@ -527,7 +527,7 @@ def select_api_key(keys, llm_model):
             if is_api2d_key(k): avail_key_list.append(k)
 
     if len(avail_key_list) == 0:
-        raise RuntimeError(f"您提供的api-key不滿足要求，不包含任何可用於{llm_model}的api-key。您可能選擇了錯誤的模型或請求源。")
+        raise RuntimeError(f"您提供的api-key不滿足要求，不包含任何可用於{llm_model}的api-key。您可能選擇了錯誤的AI/LLM模型。")
 
     api_key = random.choice(avail_key_list) # 随机负载均衡
     return api_key
@@ -583,7 +583,7 @@ def read_env_variable(arg, default_value):
         print亮红(f"[ENV_VAR] 環境變量{arg}加載失敗!")
         raise KeyError(f"[ENV_VAR] 環境變量{arg}加載失敗!")
 
-    print亮绿(f"[ENV_VAR] 成功读取环境变量{arg}")
+    print亮绿(f"[ENV_VAR] 成功讀取環境變量{arg}")
     return r
 
 @lru_cache(maxsize=128)
@@ -603,18 +603,18 @@ def read_single_conf_with_lru_cache(arg):
 
     # 在读取API_KEY时，检查一下是不是忘了改config
     if arg == 'API_KEY':
-        print亮蓝(f"[API_KEY] 本项目现已支持OpenAI和API2D的api-key。也支持同时填写多个api-key，如API_KEY=\"openai-key1,openai-key2,api2d-key3\"")
-        print亮蓝(f"[API_KEY] 您既可以在config.py中修改api-key(s)，也可以在问题输入区输入临时的api-key(s)，然后回车键提交后即可生效。")
+        print亮蓝(f"[API_KEY] 本項目現已支持OpenAI和API2D的api-key，也支持同時填寫多個api-key，如：API_KEY=\"openai-key1,openai-key2,api2d-key3\"")
+        print亮蓝(f"[API_KEY] 您可以在config.py中修改api-key(s)，也可以在問題輸入區輸入臨時的api-key(s)，然後回車鍵提交後即可生效。")
         if is_any_api_key(r):
-            print亮绿(f"[API_KEY] 您的 API_KEY 是: {r[:15]}*** API_KEY 导入成功")
+            print亮绿(f"[API_KEY] 您的 API_KEY 是: {r[:15]}*** API_KEY 導入成功")
         else:
-            print亮红( "[API_KEY] 正确的 API_KEY 是'sk'开头的51位密钥（OpenAI），或者 'fk'开头的41位密钥，请在config文件中修改API密钥之后再运行。")
+            print亮红( "[API_KEY] 正確的 API_KEY 是'sk'開頭的51位密鑰（OpenAI），或者 'fk'開頭的41位密鑰，請在config文件中修改API密鑰之後再運行。")
     if arg == 'proxies':
         if r is None:
-            print亮红('[PROXY] 网络代理状态：未配置。无代理状态下很可能无法访问OpenAI家族的模型。建议：检查USE_PROXY选项是否修改。')
+            print亮红("[PROXY] 網絡代理狀態：未配置。無代理狀態下很可能無法訪問OpenAI家族的模型。建議：檢查USE_PROXY選項是否修改。")
         else:
-            print亮绿('[PROXY] 网络代理状态：已配置。配置信息如下：', r)
-            assert isinstance(r, dict), 'proxies格式错误，请注意proxies选项的格式，不要遗漏括号。'
+            print亮绿("[PROXY] 網絡代理狀態：已配置。配置信息如下：", r)
+            assert isinstance(r, dict), 'proxies格式錯誤，請注意proxies選項的格式，不要遺漏括號。'
     return r
 
 
@@ -662,17 +662,17 @@ def run_gradio_in_subpath(demo, auth, port, custom_path):
         '''
         if path == "/": return True
         if len(path) == 0:
-            print("ilegal custom path: {}\npath must not be empty\ndeploy on root url".format(path))
+            print("illegal custom path: {}\npath must not be empty\ndeploy on root url".format(path))
             return False
         if path[0] == '/':
             if path[1] != '/':
                 print("deploy on sub-path {}".format(path))
                 return True
             return False
-        print("ilegal custom path: {}\npath should begin with \'/\'\ndeploy on root url".format(path))
+        print("illegal custom path: {}\npath should begin with \'/\'\ndeploy on root url".format(path))
         return False
 
-    if not is_path_legal(custom_path): raise RuntimeError('Ilegal custom path')
+    if not is_path_legal(custom_path): raise RuntimeError('Illegal custom path')
     import uvicorn
     import gradio as gr
     from fastapi import FastAPI
