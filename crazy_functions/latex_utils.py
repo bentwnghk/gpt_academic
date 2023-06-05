@@ -50,7 +50,14 @@ def merge_tex_files(project_foler, main_file, mode):
         pattern = re.compile(r'\\documentclass.*\n')
         match = pattern.search(main_file)
         position = match.end()
-        main_file = main_file[:position] + '\\usepackage{CTEX}\n\\usepackage{url}\n' + main_file[position:]
+        add_ctex = '\\usepackage{ctex}\n'
+        add_url = '\\usepackage{url}\n' if '{url}' not in main_file else ''
+        main_file = main_file[:position] + add_ctex + add_url + main_file[position:]
+        # 2 fontset=windows
+        import platform
+        if platform.system() != 'Windows':
+            main_file = re.sub(r"\\documentclass\[(.*?)\]{(.*?)}", r"\\documentclass[\1,fontset=windows]{\2}",main_file)
+            main_file = re.sub(r"\\documentclass{(.*?)}", r"\\documentclass[fontset=windows]{\1}",main_file)
 
     new_file_remove_comment_lines = []
     for l in main_file.splitlines():
@@ -135,7 +142,7 @@ class LatexPaperSplit():
                 match = pattern.search(result_string)
                 position = match.end()
                 result_string = result_string[:position] + \
-                    "{\\scriptsize\\textbf{警告：該PDF由GPT-Academic開源項目調用大語言模型+Latex翻譯插件一鍵生成，其內容可靠性沒有任何保障，請仔細鑑別並以原文為準。" + \
+                    "{\\scriptsize\\textbf{警告：該PDF由GPT-Academic開源項目調用大語言模型+Latex翻譯插件一鍵生成，版權歸原文作者所有。翻譯內容可靠性無任何保障，請仔細鑑別並以原文為準。" + \
                     "項目地址 \\url{https://ai6.mister5.net/}。"            + \
                     msg + \
                     "為了防止大語言模型的意外謬誤產生擴散影響，禁止移除或修改此警告。}}\\\\"    + \
