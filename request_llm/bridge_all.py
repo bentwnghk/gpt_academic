@@ -25,7 +25,7 @@ from .bridge_newbing import predict as newbing_ui
 # from .bridge_tgui import predict_no_ui_long_connection as tgui_noui
 # from .bridge_tgui import predict as tgui_ui
 
-colors = ['#FF00FF', '#00FFFF', '#FF0000', '#990099', '#009999', '#990044']
+colors = ['#FF00FF', '#009999', '#FF0000', '#990099', '#990044', '#00FFFF']
 
 class LazyloadTiktoken(object):
     def __init__(self, model):
