@@ -225,7 +225,7 @@ def Latex翻译中文并重新编译PDF(txt, llm_kwargs, plugin_kwargs, chatbot,
     history = []
     txt, arxiv_id = yield from arxiv_download(chatbot, history, txt)
     if txt.endswith('.pdf'):
-        report_execption(chatbot, history, a = f"解析项目: {txt}", b = f"发现已经存在翻译好的PDF文档")
+        report_execption(chatbot, history, a = f"解析項目: {txt}", b = f"發現已經存在翻譯好的PDF文檔")
         yield from update_ui(chatbot=chatbot, history=history) # 刷新界面
         return
     

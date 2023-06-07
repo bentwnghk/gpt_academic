@@ -81,7 +81,7 @@ def 读取知识库作答(txt, llm_kwargs, plugin_kwargs, chatbot, history, syst
         from langchain.embeddings.huggingface import HuggingFaceEmbeddings
         from .crazy_utils import knowledge_archive_interface
     except Exception as e:
-        chatbot.append(["依赖不足", "导入依赖失败。正在尝试自动安装，请查看终端的输出或耐心等待..."])
+        chatbot.append(["依賴不足", "導入依賴失敗。正在嘗試自動安裝，請查看終端的輸出或耐心等待..."])
         yield from update_ui(chatbot=chatbot, history=history) # 刷新界面
         from .crazy_utils import try_install_deps
         try_install_deps(['zh_langchain==0.2.0'])
