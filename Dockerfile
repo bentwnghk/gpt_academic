@@ -10,10 +10,15 @@ RUN echo '[global]' > /etc/pip.conf && \
 
 WORKDIR /gpt
 
-# 装载项目文件
-COPY . .
+
+
 
 # 安装依赖
+COPY requirements.txt ./
+COPY ./docs/gradio-3.32.2-py3-none-any.whl ./docs/gradio-3.32.2-py3-none-any.whl
+RUN pip3 install -r requirements.txt
+# 装载项目文件
+COPY . .
 RUN pip3 install -r requirements.txt
 RUN pip3 install -r request_llm/requirements_slackclaude.txt
 
