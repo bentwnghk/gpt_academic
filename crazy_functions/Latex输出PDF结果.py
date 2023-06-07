@@ -82,7 +82,14 @@ def arxiv_download(chatbot, history, txt):
             promote_file_to_downloadzone(target_file)
             return target_file
         return False
-    
+    def is_float(s):
+        try:
+            float(s)
+            return True
+        except ValueError:
+            return False
+    if ('.' in txt) and ('/' not in txt) and is_float(txt):
+        txt = 'https://arxiv.org/abs/' + txt
     if not txt.startswith('https://arxiv.org'): 
         return txt, None
     
@@ -198,7 +205,7 @@ def Latex翻译中文并重新编译PDF(txt, llm_kwargs, plugin_kwargs, chatbot,
     # <-------------- information about this plugin ------------->
     chatbot.append([
         "函數插件功能？",
-        "對整個Latex項目進行翻譯, 生成中文PDF。函數插件貢獻者: Binary-Husky。注意事項: 目前僅支持GPT3.5/GPT4，其他模型轉化效果未知。目前對機器學習類文獻轉化效果最好，其他類型文獻轉化效果未知。僅在Windows系統進行了測試，其他操作系統表現未知。"])
+        "對整個Latex項目進行翻譯, 生成中文PDF。函數插件貢獻者: Binary-Husky。注意事項: 目前僅支持GPT3.5/GPT4，其他模型轉化效果未知。目前對機器學習類文獻轉化效果最好，其他類型文獻轉化效果未知。"])
     yield from update_ui(chatbot=chatbot, history=history) # 刷新界面
 
 
@@ -221,6 +228,8 @@ def Latex翻译中文并重新编译PDF(txt, llm_kwargs, plugin_kwargs, chatbot,
         report_execption(chatbot, history, a = f"解析项目: {txt}", b = f"发现已经存在翻译好的PDF文档")
         yield from update_ui(chatbot=chatbot, history=history) # 刷新界面
         return
+    
+
     if os.path.exists(txt):
         project_folder = txt
     else:
@@ -228,6 +237,7 @@ def Latex翻译中文并重新编译PDF(txt, llm_kwargs, plugin_kwargs, chatbot,
         report_execption(chatbot, history, a = f"解析項目: {txt}", b = f"找不到本地項目或無權訪問: {txt}")
         yield from update_ui(chatbot=chatbot, history=history) # 刷新界面
         return
+    
     file_manifest = [f for f in glob.glob(f'{project_folder}/**/*.tex', recursive=True)]
     if len(file_manifest) == 0:
         report_execption(chatbot, history, a = f"解析項目: {txt}", b = f"找不到任何.tex文件: {txt}")
@@ -260,6 +270,7 @@ def Latex翻译中文并重新编译PDF(txt, llm_kwargs, plugin_kwargs, chatbot,
     else:
         chatbot.append((f"失敗了", '雖然PDF生成失敗了, 但請查收結果（壓縮包）, 內含已經翻譯的Tex文檔, 也是可讀的, 您可以到Github Issue區, 用該壓縮包+對話歷史存檔進行反饋 ...'))
         yield from update_ui(chatbot=chatbot, history=history); time.sleep(1) # 刷新界面
+
 
     # <-------------- we are done ------------->
     return success
