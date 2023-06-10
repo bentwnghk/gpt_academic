@@ -483,7 +483,9 @@ def on_report_generated(files, chatbot):
     if len(report_files) == 0:
         return None, chatbot
     # files.extend(report_files)
-    chatbot.append(['報告如何遠程獲取？', '報告已經添加到右側“文件上傳區”（可能處於折疊狀態），請查收。'])
+    file_links = ''
+    for f in report_files: file_links += f'<br/><a href="file={os.path.abspath(f)}" target="_blank">{f}</a>'
+    chatbot.append(['報告如何遠程獲取？', f'報告已經添加到右側“文件上傳區”（可能處於折疊狀態），請查收。{file_links}'])
     return report_files, chatbot
 
 def is_openai_api_key(key):
