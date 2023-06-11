@@ -146,7 +146,7 @@ def Latex英文纠错加PDF对比(txt, llm_kwargs, plugin_kwargs, chatbot, histo
         from .latex_utils import Latex精细分解与转化, 编译Latex
     except Exception as e:
         chatbot.append([ f"解析項目: {txt}",
-            f"嘗試執行Latex指令失敗。 Latex沒有安裝, 或者不在環境變量PATH中。報錯信息\n\n```\n\n{trimmed_format_exc()}\n\n```\n\n"])
+            f"嘗試執行Latex指令失敗。 Latex沒有安裝, 或者不在環境變量PATH中。安裝方法: https://tug.org/texlive/。報錯信息\n\n```\n\n{trimmed_format_exc()}\n\n```\n\n"])
         yield from update_ui(chatbot=chatbot, history=history) # 刷新界面
         return
     
@@ -216,7 +216,7 @@ def Latex翻译中文并重新编译PDF(txt, llm_kwargs, plugin_kwargs, chatbot,
         from .latex_utils import Latex精细分解与转化, 编译Latex
     except Exception as e:
         chatbot.append([ f"解析項目: {txt}",
-            f"嘗試執行Latex指令失敗。Latex沒有安裝, 或者不在環境變量PATH中。報錯信息\n\n```\n\n{trimmed_format_exc()}\n\n```\n\n"])
+            f"嘗試執行Latex指令失敗。 Latex沒有安裝, 或者不在環境變量PATH中。安裝方法: https://tug.org/texlive/。報錯信息\n\n```\n\n{trimmed_format_exc()}\n\n```\n\n"])
         yield from update_ui(chatbot=chatbot, history=history) # 刷新界面
         return
     
