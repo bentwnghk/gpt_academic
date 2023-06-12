@@ -521,7 +521,7 @@ def Latex精细分解与转化(file_manifest, project_folder, llm_kwargs, plugin
         f.write(merged_content)
 
     #  <-------- 精细切分latex文件 ----------> 
-    chatbot.append((f"Latex文件融合完成", f'[Local Message] 正在精细切分latex文件，这需要一段时间计算，文档越长耗时越长，请耐心等待。'))
+    chatbot.append((f"Latex文件融合完成", f'[Local Message] 正在精細切分latex文件，這需要一段時間計算，文檔越長耗時越長，請耐心等待。'))
     yield from update_ui(chatbot=chatbot, history=history) # 刷新界面
     lps = LatexPaperSplit()
     res = lps.split(merged_content, project_folder, opts) # 消耗时间的函数
