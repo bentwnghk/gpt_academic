@@ -205,7 +205,7 @@ def Latex翻译中文并重新编译PDF(txt, llm_kwargs, plugin_kwargs, chatbot,
     # <-------------- information about this plugin ------------->
     chatbot.append([
         "函數插件功能？",
-        "對整個Latex項目進行翻譯, 生成中文PDF。函數插件貢獻者: Binary-Husky。注意事項: 目前僅支持GPT3.5/GPT4，其他模型轉化效果未知。目前對機器學習類文獻轉化效果最好，其他類型文獻轉化效果未知。"])
+        "對整個Latex項目進行翻譯, 生成中文PDF。函數插件貢獻者: Binary-Husky。注意事項: 此插件Windows支持最佳，Linux下必須使用Docker安裝，詳見項目主README.md。目前僅支持GPT3.5/GPT4，其他模型轉化效果未知。目前對機器學習類文獻轉化效果最好，其他類型文獻轉化效果未知。"])
     yield from update_ui(chatbot=chatbot, history=history) # 刷新界面
 
 
