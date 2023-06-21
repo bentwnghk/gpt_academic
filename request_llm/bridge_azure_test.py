@@ -55,7 +55,7 @@ def predict(inputs, llm_kwargs, plugin_kwargs, chatbot, history=[], system_promp
     raw_input = inputs
     logging.info(f'[raw_input] {raw_input}')
     chatbot.append((inputs, ""))
-    yield from update_ui(chatbot=chatbot, history=history, msg="等待响应") # 刷新界面
+    yield from update_ui(chatbot=chatbot, history=history, msg="等待響應") # 刷新界面
 
     
     payload = generate_azure_payload(inputs, llm_kwargs, history, system_prompt, stream)    
@@ -74,9 +74,9 @@ def predict(inputs, llm_kwargs, plugin_kwargs, chatbot, history=[], system_promp
         
         except:
             retry += 1
-            chatbot[-1] = ((chatbot[-1][0], "获取response失败，重试中。。。"))
-            retry_msg = f"，正在重试 ({retry}/{MAX_RETRY}) ……" if MAX_RETRY > 0 else ""
-            yield from update_ui(chatbot=chatbot, history=history, msg="请求超时"+retry_msg) # 刷新界面
+            chatbot[-1] = ((chatbot[-1][0], "獲取response失敗，重試中。 。 。"))
+            retry_msg = f"，正在重試 ({retry}/{MAX_RETRY}) ……" if MAX_RETRY > 0 else ""
+            yield from update_ui(chatbot=chatbot, history=history, msg="請求超時"+retry_msg) # 刷新界面
             if retry > MAX_RETRY: raise TimeoutError
             
     gpt_replying_buffer = ""    
@@ -91,8 +91,8 @@ def predict(inputs, llm_kwargs, plugin_kwargs, chatbot, history=[], system_promp
                     
             except StopIteration:                
                 from toolbox import regular_txt_to_markdown; tb_str = '```\n' + trimmed_format_exc() + '```'
-                chatbot[-1] = (chatbot[-1][0], f"[Local Message] 远程返回错误: \n\n{tb_str} \n\n{regular_txt_to_markdown(chunk)}")
-                yield from update_ui(chatbot=chatbot, history=history, msg="远程返回错误:" + chunk) # 刷新界面
+                chatbot[-1] = (chatbot[-1][0], f"[Local Message] 遠程返回錯誤: \n\n{tb_str} \n\n{regular_txt_to_markdown(chunk)}")
+                yield from update_ui(chatbot=chatbot, history=history, msg="遠程返回錯誤:" + chunk) # 刷新界面
                 return            
             
             if is_head_of_the_stream and (r'"object":"error"' not in chunk):
@@ -115,11 +115,11 @@ def predict(inputs, llm_kwargs, plugin_kwargs, chatbot, history=[], system_promp
 
                 except Exception as e:
                     traceback.print_exc()
-                    yield from update_ui(chatbot=chatbot, history=history, msg="Json解析不合常规") # 刷新界面
+                    yield from update_ui(chatbot=chatbot, history=history, msg="json解析不合常規") # 刷新界面
                     chunk = get_full_error(chunk, stream_response)
                     
                     error_msg = chunk                    
-                    yield from update_ui(chatbot=chatbot, history=history, msg="Json异常" + error_msg) # 刷新界面
+                    yield from update_ui(chatbot=chatbot, history=history, msg="json異常" + error_msg) # 刷新界面
                     return
 
 
@@ -153,7 +153,7 @@ def predict_no_ui_long_connection(inputs, llm_kwargs, history=[], sys_prompt="",
             retry += 1
             traceback.print_exc()
             if retry > MAX_RETRY: raise TimeoutError
-            if MAX_RETRY!=0: print(f'请求超时，正在重试 ({retry}/{MAX_RETRY}) ……')     
+            if MAX_RETRY!=0: print(f'請求超時，正在重試 ({retry}/{MAX_RETRY}) ……')     
         
 
     stream_response =  response
@@ -169,9 +169,9 @@ def predict_no_ui_long_connection(inputs, llm_kwargs, history=[], sys_prompt="",
         if not chunk.startswith('data:'): 
             error_msg = get_full_error(chunk, stream_response)
             if "reduce the length" in error_msg:
-                raise ConnectionAbortedError("AZURE OPENAI API拒绝了请求:" + error_msg)
+                raise ConnectionAbortedError("AZURE OPENAI API拒絕了請求:" + error_msg)
             else:
-                raise RuntimeError("AZURE OPENAI API拒绝了请求：" + error_msg)
+                raise RuntimeError("AZURE OPENAI API拒絕了請求：" + error_msg)
         if ('data: [DONE]' in chunk): break 
         
         delta = chunk["delta"]
@@ -186,10 +186,10 @@ def predict_no_ui_long_connection(inputs, llm_kwargs, history=[], sys_prompt="",
                 # 看门狗，如果超过期限没有喂狗，则终止
                 if len(observe_window) >= 2:  
                     if (time.time()-observe_window[1]) > watch_dog_patience:
-                        raise RuntimeError("用户取消了程序。")
-        else: raise RuntimeError("意外Json结构："+delta)
+                        raise RuntimeError("用戶取消了程序。")
+        else: raise RuntimeError("意外json結構："+delta)
     if chunk['finish_reason'] == 'length':
-        raise ConnectionAbortedError("正常结束，但显示Token不足，导致输出不完整，请削减单次输入的文本量。")
+        raise ConnectionAbortedError("正常結束，但顯示Token不足，導致輸出不完整，請削減單次輸入的文本量。")
     return result
 
 
@@ -235,7 +235,7 @@ def generate_azure_payload(inputs, llm_kwargs, history, system_prompt, stream):
     try:
         print(f" {llm_kwargs['llm_model']} : {conversation_cnt} : {inputs[:100]} ..........")
     except:
-        print('输入中可能存在乱码。')
+        print('輸入中可能存在亂碼。')
     return payload
 
 

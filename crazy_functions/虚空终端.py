@@ -45,7 +45,7 @@ Code:
 class AutoAcademic(object):
     def __init__(self):
         self.selected_function = "FILL_CORRECT_FUNCTION_HERE"      # e.g., "GenerateImage"
-        self.txt = "FILL_MAIN_PARAMETER_HERE"      # e.g., "荷叶上的蜻蜓"
+        self.txt = "FILL_MAIN_PARAMETER_HERE"      # e.g., "荷葉上的蜻蜓"
         self.llm_kwargs = None
 ```
 Explanation:
@@ -57,11 +57,11 @@ Now, this is my requirement:
 """
 def get_fn_lib():
     return {
-        "BatchTranslatePDFDocuments_MultiThreaded": ("crazy_functions.批量翻译PDF文档_多线程",  "批量翻译PDF文档"),
-        "SummarizingWordDocuments": ("crazy_functions.总结word文档",  "总结word文档"),
-        "ImageGeneration": ("crazy_functions.图片生成",  "图片生成"),
-        "TranslateMarkdownFromEnglishToChinese": ("crazy_functions.批量Markdown翻译",  "Markdown中译英"),
-        "SummaryAudioVideo": ("crazy_functions.总结音视频",  "总结音视频"),
+        "BatchTranslatePDFDocuments_MultiThreaded": ("crazy_functions.批量翻译PDF文档_多线程",  "批量翻譯PDF文檔"),
+        "SummarizingWordDocuments": ("crazy_functions.总结word文档",  "總結Word文檔"),
+        "ImageGeneration": ("crazy_functions.图片生成",  "圖片生成"),
+        "TranslateMarkdownFromEnglishToChinese": ("crazy_functions.批量Markdown翻译",  "Markdown中譯英"),
+        "SummaryAudioVideo": ("crazy_functions.总结音视频",  "總結音視頻"),
     }
 
 def inspect_dependency(chatbot, history):
@@ -84,7 +84,7 @@ def eval_code(code, llm_kwargs, plugin_kwargs, chatbot, history, system_prompt, 
         yield from fn_plugin(txt, llm_kwargs, plugin_kwargs, chatbot, history, system_prompt, web_port)
     except:
         from toolbox import trimmed_format_exc
-        chatbot.append(["执行错误", f"\n```\n{trimmed_format_exc()}\n```\n"])
+        chatbot.append(["執行錯誤", f"\n```\n{trimmed_format_exc()}\n```\n"])
         yield from update_ui(chatbot=chatbot, history=history) # 刷新界面
 
 def get_code_block(reply):
@@ -110,7 +110,7 @@ def 终端(txt, llm_kwargs, plugin_kwargs, chatbot, history, system_prompt, web_
     history = []    
 
     # 基本信息：功能、贡献者
-    chatbot.append(["函数插件功能？", "根据自然语言执行插件命令, 作者: binary-husky, 插件初始化中 ..."])
+    chatbot.append(["函數插件功能？ ", "根據自然語言執行插件命令, 作者: binary-husky, 插件初始化中 ..."])
     yield from update_ui(chatbot=chatbot, history=history) # 刷新界面
 
     # # 尝试导入依赖, 如果缺少依赖, 则给出安装建议

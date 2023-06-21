@@ -726,7 +726,7 @@ class construct_html():
   padding: 5px;
 }
         """
-        self.html_string = f'<!DOCTYPE html><head><meta charset="utf-8"><title>翻译结果</title><style>{self.css}</style></head>'
+        self.html_string = f'<!DOCTYPE html><head><meta charset="utf-8"><title>翻譯結果</title><style>{self.css}</style></head>'
 
 
     def add_row(self, a, b):
