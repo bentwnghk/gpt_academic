@@ -19,9 +19,9 @@ def switch_prompt(pfg, mode, more_requirement):
     - sys_prompt_array: A list of strings containing prompts for system prompts.
     """
     n_split = len(pfg.sp_file_contents)
-    if mode == 'proofread':
+    if mode == 'proofread_en':
         inputs_array = [r"Below is a section from an academic paper, proofread this section." + 
-                        r"Do not modify any latex command such as \section, \cite, \begin, \item and equations. " + 
+                        r"Do not modify any latex command such as \section, \cite, \begin, \item and equations. " + more_requirement +
                         r"Answer me only with the revised text:" + 
                         f"\n\n{frag}" for frag in pfg.sp_file_contents]
         sys_prompt_array = ["You are a professional academic paper writer." for _ in range(n_split)]
@@ -70,6 +70,12 @@ def move_project(project_folder, arxiv_id=None):
         shutil.rmtree(new_workfolder)
     except:
         pass
+
+    # align subfolder if there is a folder wrapper
+    items = glob.glob(pj(project_folder,'*'))
+    if len(glob.glob(pj(project_folder,'*.tex'))) == 0 and len(items) == 1:
+        if os.path.isdir(items[0]): project_folder = items[0]
+
     shutil.copytree(src=project_folder, dst=new_workfolder)
     return new_workfolder
 
@@ -141,7 +147,11 @@ def Latex英文纠错加PDF对比(txt, llm_kwargs, plugin_kwargs, chatbot, histo
     chatbot.append([ "函數插件功能？",
         "對整個Latex項目進行糾錯, 用latex編譯為PDF對修正處做高亮。函數插件貢獻者: Binary-Husky。注意事項: 目前僅支持GPT3.5/GPT4，其他模型轉化效果未知。目前對機器學習類文獻轉化效果最好，其他類型文獻轉化效果未知。僅在Windows系統進行了測試，其他操作系統表現未知。"])
     yield from update_ui(chatbot=chatbot, history=history) # 刷新界面
-
+    
+    # <-------------- more requirements ------------->
+    if ("advanced_arg" in plugin_kwargs) and (plugin_kwargs["advanced_arg"] == ""): plugin_kwargs.pop("advanced_arg")
+    more_req = plugin_kwargs.get("advanced_arg", "")
+    _switch_prompt_ = partial(switch_prompt, more_requirement=more_req)
 
     # <-------------- check deps ------------->
     try:
@@ -180,13 +190,13 @@ def Latex英文纠错加PDF对比(txt, llm_kwargs, plugin_kwargs, chatbot, histo
 
 
     # <-------------- if merge_translate_zh is already generated, skip gpt req ------------->
-    if not os.path.exists(project_folder + '/merge_proofread.tex'):
+    if not os.path.exists(project_folder + '/merge_proofread_en.tex'):
         yield from Latex精细分解与转化(file_manifest, project_folder, llm_kwargs, plugin_kwargs, 
-                                chatbot, history, system_prompt, mode='proofread_latex', switch_prompt=switch_prompt)
+                                chatbot, history, system_prompt, mode='proofread_en', switch_prompt=_switch_prompt_)
 
 
     # <-------------- compile PDF ------------->
-    success = yield from 编译Latex(chatbot, history, main_file_original='merge', main_file_modified='merge_proofread', 
+    success = yield from 编译Latex(chatbot, history, main_file_original='merge', main_file_modified='merge_proofread_en', 
                              work_folder_original=project_folder, work_folder_modified=project_folder, work_folder=project_folder)
     
 
@@ -195,6 +205,7 @@ def Latex英文纠错加PDF对比(txt, llm_kwargs, plugin_kwargs, chatbot, histo
     if success:
         chatbot.append((f"成功啦", '請查收結果（壓縮包）...'))
         yield from update_ui(chatbot=chatbot, history=history); time.sleep(1) # 刷新界面
+        promote_file_to_downloadzone(file=zip_res, chatbot=chatbot)
     else:
         chatbot.append((f"失敗了", '雖然PDF生成失敗了, 但請查收結果（壓縮包）, 內含已經翻譯的Tex文檔, 也是可讀的, 您可以到Github Issue區, 用該壓縮包+對話歷史存檔進行反饋 ...'))
         yield from update_ui(chatbot=chatbot, history=history); time.sleep(1) # 刷新界面
@@ -278,6 +289,7 @@ def Latex翻译中文并重新编译PDF(txt, llm_kwargs, plugin_kwargs, chatbot,
     if success:
         chatbot.append((f"成功啦", '請查收結果（壓縮包）...'))
         yield from update_ui(chatbot=chatbot, history=history); time.sleep(1) # 刷新界面
+        promote_file_to_downloadzone(file=zip_res, chatbot=chatbot)
     else:
         chatbot.append((f"失敗了", '雖然PDF生成失敗了, 但請查收結果（壓縮包）, 內含已經翻譯的Tex文檔, 也是可讀的, 您可以到Github Issue區, 用該壓縮包+對話歷史存檔進行反饋 ...'))
         yield from update_ui(chatbot=chatbot, history=history); time.sleep(1) # 刷新界面

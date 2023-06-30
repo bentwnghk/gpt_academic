@@ -227,10 +227,18 @@ def get_crazy_functions():
     try:
         from crazy_functions.联网的ChatGPT import 连接网络回答问题
         function_plugins.update({
-            "連接網絡回答問題（先輸入問題，再點擊按鈕，需要訪問谷歌）": {
+            "連接網絡回答問題（輸入問題後點擊該插件，需要訪問谷歌）": {
                 "Color": "stop",
                 "AsButton": False,  # 加入下拉菜单中
                 "Function": HotReload(连接网络回答问题)
+            }
+        })
+        from crazy_functions.联网的ChatGPT_bing版 import 连接bing搜索回答问题
+        function_plugins.update({
+            "連接網絡回答問題（中文Bing版，輸入問題後點擊該插件）": {
+                "Color": "stop",
+                "AsButton": False,  # 加入下拉菜单中
+                "Function": HotReload(连接bing搜索回答问题)
             }
         })
     except:
@@ -349,11 +357,11 @@ def get_crazy_functions():
     try:
         from crazy_functions.Latex输出PDF结果 import Latex英文纠错加PDF对比
         function_plugins.update({
-            "[功能尚不穩定] Latex英文糾錯+LatexDiff高亮修正位置": {
+            "Latex英文糾錯+高亮修正位置 [需Latex]": {
                 "Color": "stop",
                 "AsButton": False,
-                # "AdvancedArgs": True,
-                # "ArgsReminder": "",
+                "AdvancedArgs": True,
+                "ArgsReminder": "如果有必要, 請在此處追加更細緻的矯錯指令（使用英文）。",
                 "Function": HotReload(Latex英文纠错加PDF对比)
             }
         })
@@ -364,29 +372,29 @@ def get_crazy_functions():
                 "AsButton": False,
                 "AdvancedArgs": True,
                 "ArgsReminder": 
+                    "如果有必要, 請在此處給出自定義翻譯命令, 解決部分詞彙翻譯不准確的問題。"+ 
+                    "例如當單詞'agent'翻譯不准確時, 請嘗試把以下指令複製到高級參數區: " + 'If the term "agent" is used in this section, it should be translated to "智能體". ',
+                "Function": HotReload(Latex翻译中文并重新编译PDF)
+            }
+        })
+        function_plugins.update({
+            "本地論文翻譯（上傳Latex壓縮包）[需Latex]": {
+                "Color": "stop",
+                "AsButton": False,
+                "AdvancedArgs": True,
+                "ArgsReminder": 
                     "如果有必要, 請在此處給出自定義翻譯命令, 解決部分詞彙翻譯不准確的問題。 "+ 
                     "例如當單詞'agent'翻譯不准確時, 請嘗試把以下指令複製到高級參數區: " + 'If the term "agent" is used in this section, it should be translated to "智能體". ',
                 "Function": HotReload(Latex翻譯中文並重新編譯PDF)
             }
         })
-        # function_plugins.update({
-        #     "本地论文翻译（上传Latex压缩包） [需Latex]": {
-        #         "Color": "stop",
-        #         "AsButton": False,
-        #         "AdvancedArgs": True,
-        #         "ArgsReminder": 
-        #             "如果有必要, 请在此处给出自定义翻译命令, 解决部分词汇翻译不准确的问题。 "+ 
-        #             "例如当单词'agent'翻译不准确时, 请尝试把以下指令复制到高级参数区: " + 'If the term "agent" is used in this section, it should be translated to "智能体". ',
-        #         "Function": HotReload(Latex翻译中文并重新编译PDF)
-        #     }
-        # })
     except:
         print('Load function plugin failed')
 
     # try:
     #     from crazy_functions.虚空终端 import 终端
     #     function_plugins.update({
-    #         "超级终端": {
+    #         "超級終端": {
     #             "Color": "stop",
     #             "AsButton": False,
     #             # "AdvancedArgs": True,

@@ -63,6 +63,7 @@ def get_core_functions():
             "Prefix":   r"我需要你找一張網絡圖片。使用Unsplash API(https://source.unsplash.com/960x640/?<英語關鍵詞>)獲取圖片URL，" +
                         r"然後請使用Markdown格式封裝，並且不要有反斜線，不要用代碼塊。現在，請按以下描述給我發送圖片：" + "\n\n",
             "Suffix":   r"",
+            "Visible": False,
         },
         "解釋代碼": {
             "Prefix":   r"請解釋以下代碼：" + "\n```\n",
@@ -73,6 +74,5 @@ def get_core_functions():
                         r"Note that, reference styles maybe more than one kind, you should transform each item correctly." +
                         r"Items need to be transformed:",
             "Suffix":   r"",
-            "Visible": False,
         }
     }

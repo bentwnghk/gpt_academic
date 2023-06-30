@@ -8,24 +8,49 @@ pj = os.path.join
 """
 ========================================================================
 Part One
-Latex segmentation to a linklist
+Latex segmentation with a binary mask (PRESERVE=0, TRANSFORM=1)
 ========================================================================
 """
 PRESERVE = 0
 TRANSFORM = 1
 
-def split_worker(text, mask, pattern, flags=0):
+def set_forbidden_text(text, mask, pattern, flags=0):
     """
     Add a preserve text area in this paper
+    e.g. with pattern = r"\\begin\{algorithm\}(.*?)\\end\{algorithm\}"
+    you can mask out (mask = PRESERVE so that text become untouchable for GPT) 
+    everything between "\begin{equation}" and "\end{equation}"
     """
+    if isinstance(pattern, list): pattern = '|'.join(pattern)
     pattern_compile = re.compile(pattern, flags)
     for res in pattern_compile.finditer(text):
         mask[res.span()[0]:res.span()[1]] = PRESERVE
     return text, mask
 
-def split_worker_careful_brace(text, mask, pattern, flags=0):
+def reverse_forbidden_text(text, mask, pattern, flags=0, forbid_wrapper=True):
     """
-    Move area into preserve area 
+    Move area out of preserve area (make text editable for GPT)
+    count the number of the braces so as to catch compelete text area. 
+    e.g.
+    \begin{abstract} blablablablablabla. \end{abstract} 
+    """
+    if isinstance(pattern, list): pattern = '|'.join(pattern)
+    pattern_compile = re.compile(pattern, flags)
+    for res in pattern_compile.finditer(text):
+        if not forbid_wrapper:
+            mask[res.span()[0]:res.span()[1]] = TRANSFORM
+        else:
+            mask[res.regs[0][0]: res.regs[1][0]] = PRESERVE   # '\\begin{abstract}'
+            mask[res.regs[1][0]: res.regs[1][1]] = TRANSFORM   # abstract
+            mask[res.regs[1][1]: res.regs[0][1]] = PRESERVE   # abstract
+    return text, mask
+
+def set_forbidden_text_careful_brace(text, mask, pattern, flags=0):
+    """
+    Add a preserve text area in this paper (text become untouchable for GPT).
+    count the number of the braces so as to catch compelete text area. 
+    e.g.
+    \caption{blablablablabla\texbf{blablabla}blablabla.} 
     """
     pattern_compile = re.compile(pattern, flags)
     for res in pattern_compile.finditer(text):
@@ -40,9 +65,12 @@ def split_worker_careful_brace(text, mask, pattern, flags=0):
         mask[begin:end] = PRESERVE
     return text, mask
 
-def split_worker_reverse_careful_brace(text, mask, pattern, flags=0):
+def reverse_forbidden_text_careful_brace(text, mask, pattern, flags=0, forbid_wrapper=True):
     """
-    Move area out of preserve area 
+    Move area out of preserve area (make text editable for GPT)
+    count the number of the braces so as to catch compelete text area. 
+    e.g.
+    \caption{blablablablabla\texbf{blablabla}blablabla.} 
     """
     pattern_compile = re.compile(pattern, flags)
     for res in pattern_compile.finditer(text):
@@ -55,9 +83,12 @@ def split_worker_reverse_careful_brace(text, mask, pattern, flags=0):
             p += 1
         end = p
         mask[begin:end] = TRANSFORM
+        if forbid_wrapper:
+            mask[res.regs[0][0]:begin] = PRESERVE
+            mask[end:res.regs[0][1]] = PRESERVE
     return text, mask
 
-def split_worker_begin_end(text, mask, pattern, flags=0, limit_n_lines=42):
+def set_forbidden_text_begin_end(text, mask, pattern, flags=0, limit_n_lines=42):
     """
     Find all \begin{} ... \end{} text block that with less than limit_n_lines lines.
     Add it to preserve area
@@ -110,18 +141,41 @@ Latex Merge File
 def 寻找Latex主文件(file_manifest, mode):
     """
     在多Tex文档中，寻找主文件，必须包含documentclass，返回找到的第一个。
-    P.S. 但愿没人把latex模板放在里面传进来
+    P.S. 但愿没人把latex模板放在里面传进来 (6.25 加入判定latex模板的代码)
     """
+    canidates = []
     for texf in file_manifest:
         if os.path.basename(texf).startswith('merge'):
             continue
         with open(texf, 'r', encoding='utf8') as f:
             file_content = f.read()
         if r'\documentclass' in file_content:
-            return texf
+            canidates.append(texf)
         else:
             continue
-    raise RuntimeError('無法找到一個主Tex文件（包含documentclass關鍵字）')
+
+    if len(canidates) == 0:
+        raise RuntimeError('無法找到一個主Tex文件（包含documentclass關鍵字）')
+    elif len(canidates) == 1:
+        return canidates[0]
+    else: # if len(canidates) >= 2 通过一些Latex模板中常见（但通常不会出现在正文）的单词，对不同latex源文件扣分，取评分最高者返回
+        canidates_score = []
+        # 给出一些判定模板文档的词作为扣分项
+        unexpected_words = ['\LaTeX', 'manuscript', 'Guidelines', 'font', 'citations', 'rejected', 'blind review', 'reviewers']
+        expected_words = ['\input', '\ref', '\cite']
+        for texf in canidates:
+            canidates_score.append(0)
+            with open(texf, 'r', encoding='utf8') as f:
+                file_content = f.read()
+            for uw in unexpected_words:
+                if uw in file_content:
+                    canidates_score[-1] -= 1
+            for uw in expected_words:
+                if uw in file_content:
+                    canidates_score[-1] += 1
+        select = np.argmax(canidates_score) # 取评分最高者返回
+        return canidates[select]
+    
 def rm_comments(main_file):
     new_file_remove_comment_lines = []
     for l in main_file.splitlines():
@@ -131,6 +185,7 @@ def rm_comments(main_file):
         else:
             new_file_remove_comment_lines.append(l)
     main_file = '\n'.join(new_file_remove_comment_lines)
+    # main_file = re.sub(r"\\include{(.*?)}", r"\\input{\1}", main_file)  # 将 \include 命令转换为 \input 命令
     main_file = re.sub(r'(?<!\\)%.*', '', main_file)  # 使用正则表达式查找半行注释, 并替换为空字符串
     return main_file
 
@@ -177,9 +232,11 @@ def merge_tex_files(project_foler, main_file, mode):
         main_file = re.sub(r"\\documentclass\[(.*?)\]{(.*?)}", r"\\documentclass[\1,fontset=windows,UTF8]{\2}",main_file)
         main_file = re.sub(r"\\documentclass{(.*?)}", r"\\documentclass[fontset=windows,UTF8]{\1}",main_file)
         # find paper abstract
-        pattern = re.compile(r'\\begin\{abstract\}.*\n')
-        match = pattern.search(main_file)
-        assert match is not None, "Cannot find paper abstract section!"
+        pattern_opt1 = re.compile(r'\\begin\{abstract\}.*\n')
+        pattern_opt2 = re.compile(r"\\abstract\{(.*?)\}", flags=re.DOTALL)
+        match_opt1 = pattern_opt1.search(main_file)
+        match_opt2 = pattern_opt2.search(main_file)
+        assert (match_opt1 is not None) or (match_opt2 is not None), "Cannot find paper abstract section!"
     return main_file
 
 
@@ -260,45 +317,34 @@ def split_subprocess(txt, project_folder, return_dict, opts):
     mask = np.zeros(len(txt), dtype=np.uint8) + TRANSFORM
 
     # 吸收title与作者以上的部分
-    text, mask = split_worker(text, mask, r"(.*?)\\maketitle", re.DOTALL)
-    # 删除iffalse注释
-    text, mask = split_worker(text, mask, r"\\iffalse(.*?)\\fi", re.DOTALL)
-    # 吸收在25行以内的begin-end组合
-    text, mask = split_worker_begin_end(text, mask, r"\\begin\{([a-z\*]*)\}(.*?)\\end\{\1\}", re.DOTALL, limit_n_lines=25)
+    text, mask = set_forbidden_text(text, mask, r"(.*?)\\maketitle", re.DOTALL)
+    # 吸收iffalse注释
+    text, mask = set_forbidden_text(text, mask, r"\\iffalse(.*?)\\fi", re.DOTALL)
+    # 吸收在42行以内的begin-end组合
+    text, mask = set_forbidden_text_begin_end(text, mask, r"\\begin\{([a-z\*]*)\}(.*?)\\end\{\1\}", re.DOTALL, limit_n_lines=42)
     # 吸收匿名公式
-    text, mask = split_worker(text, mask, r"\$\$(.*?)\$\$", re.DOTALL)
+    text, mask = set_forbidden_text(text, mask, [ r"\$\$(.*?)\$\$",  r"\\\[.*?\\\]" ], re.DOTALL)
     # 吸收其他杂项
-    text, mask = split_worker(text, mask, r"\\section\{(.*?)\}")
-    text, mask = split_worker(text, mask, r"\\section\*\{(.*?)\}")
-    text, mask = split_worker(text, mask, r"\\subsection\{(.*?)\}")
-    text, mask = split_worker(text, mask, r"\\subsubsection\{(.*?)\}")
-    text, mask = split_worker(text, mask, r"\\bibliography\{(.*?)\}")
-    text, mask = split_worker(text, mask, r"\\bibliographystyle\{(.*?)\}")
-    text, mask = split_worker(text, mask, r"\\begin\{lstlisting\}(.*?)\\end\{lstlisting\}", re.DOTALL)
-    text, mask = split_worker(text, mask, r"\\begin\{wraptable\}(.*?)\\end\{wraptable\}", re.DOTALL)
-    text, mask = split_worker(text, mask, r"\\begin\{algorithm\}(.*?)\\end\{algorithm\}", re.DOTALL)
-    text, mask = split_worker(text, mask, r"\\begin\{wrapfigure\}(.*?)\\end\{wrapfigure\}", re.DOTALL)
-    text, mask = split_worker(text, mask, r"\\begin\{wrapfigure\*\}(.*?)\\end\{wrapfigure\*\}", re.DOTALL)
-    text, mask = split_worker(text, mask, r"\\begin\{figure\}(.*?)\\end\{figure\}", re.DOTALL)
-    text, mask = split_worker(text, mask, r"\\begin\{figure\*\}(.*?)\\end\{figure\*\}", re.DOTALL)
-    text, mask = split_worker(text, mask, r"\\begin\{multline\}(.*?)\\end\{multline\}", re.DOTALL)
-    text, mask = split_worker(text, mask, r"\\begin\{multline\*\}(.*?)\\end\{multline\*\}", re.DOTALL)
-    text, mask = split_worker(text, mask, r"\\begin\{table\}(.*?)\\end\{table\}", re.DOTALL)
-    text, mask = split_worker(text, mask, r"\\begin\{table\*\}(.*?)\\end\{table\*\}", re.DOTALL)
-    text, mask = split_worker(text, mask, r"\\begin\{minipage\}(.*?)\\end\{minipage\}", re.DOTALL)
-    text, mask = split_worker(text, mask, r"\\begin\{minipage\*\}(.*?)\\end\{minipage\*\}", re.DOTALL)
-    text, mask = split_worker(text, mask, r"\\begin\{align\*\}(.*?)\\end\{align\*\}", re.DOTALL)
-    text, mask = split_worker(text, mask, r"\\begin\{align\}(.*?)\\end\{align\}", re.DOTALL)
-    text, mask = split_worker(text, mask, r"\\begin\{equation\}(.*?)\\end\{equation\}", re.DOTALL)
-    text, mask = split_worker(text, mask, r"\\begin\{equation\*\}(.*?)\\end\{equation\*\}", re.DOTALL)
-    text, mask = split_worker(text, mask, r"\\item ")
-    text, mask = split_worker(text, mask, r"\\label\{(.*?)\}")
-    text, mask = split_worker(text, mask, r"\\begin\{(.*?)\}")
-    text, mask = split_worker(text, mask, r"\\vspace\{(.*?)\}")
-    text, mask = split_worker(text, mask, r"\\hspace\{(.*?)\}")
-    text, mask = split_worker(text, mask, r"\\end\{(.*?)\}")
-    text, mask = split_worker_careful_brace(text, mask, r"\\hl\{(.*?)\}", re.DOTALL)
-    text, mask = split_worker_reverse_careful_brace(text, mask, r"\\caption\{(.*?)\}", re.DOTALL)
+    text, mask = set_forbidden_text(text, mask, [ r"\\section\{(.*?)\}", r"\\section\*\{(.*?)\}", r"\\subsection\{(.*?)\}", r"\\subsubsection\{(.*?)\}" ])
+    text, mask = set_forbidden_text(text, mask, [ r"\\bibliography\{(.*?)\}", r"\\bibliographystyle\{(.*?)\}" ])
+    text, mask = set_forbidden_text(text, mask, r"\\begin\{thebibliography\}.*?\\end\{thebibliography\}", re.DOTALL)
+    text, mask = set_forbidden_text(text, mask, r"\\begin\{lstlisting\}(.*?)\\end\{lstlisting\}", re.DOTALL)
+    text, mask = set_forbidden_text(text, mask, r"\\begin\{wraptable\}(.*?)\\end\{wraptable\}", re.DOTALL)
+    text, mask = set_forbidden_text(text, mask, r"\\begin\{algorithm\}(.*?)\\end\{algorithm\}", re.DOTALL)
+    text, mask = set_forbidden_text(text, mask, [r"\\begin\{wrapfigure\}(.*?)\\end\{wrapfigure\}", r"\\begin\{wrapfigure\*\}(.*?)\\end\{wrapfigure\*\}"], re.DOTALL)
+    text, mask = set_forbidden_text(text, mask, [r"\\begin\{figure\}(.*?)\\end\{figure\}", r"\\begin\{figure\*\}(.*?)\\end\{figure\*\}"], re.DOTALL)
+    text, mask = set_forbidden_text(text, mask, [r"\\begin\{multline\}(.*?)\\end\{multline\}", r"\\begin\{multline\*\}(.*?)\\end\{multline\*\}"], re.DOTALL)
+    text, mask = set_forbidden_text(text, mask, [r"\\begin\{table\}(.*?)\\end\{table\}", r"\\begin\{table\*\}(.*?)\\end\{table\*\}"], re.DOTALL)
+    text, mask = set_forbidden_text(text, mask, [r"\\begin\{minipage\}(.*?)\\end\{minipage\}", r"\\begin\{minipage\*\}(.*?)\\end\{minipage\*\}"], re.DOTALL)
+    text, mask = set_forbidden_text(text, mask, [r"\\begin\{align\*\}(.*?)\\end\{align\*\}", r"\\begin\{align\}(.*?)\\end\{align\}"], re.DOTALL)
+    text, mask = set_forbidden_text(text, mask, [r"\\begin\{equation\}(.*?)\\end\{equation\}", r"\\begin\{equation\*\}(.*?)\\end\{equation\*\}"], re.DOTALL)
+    text, mask = set_forbidden_text(text, mask, [r"\\includepdf\[(.*?)\]\{(.*?)\}", r"\\clearpage", r"\\newpage", r"\\appendix", r"\\tableofcontents", r"\\include\{(.*?)\}"])
+    text, mask = set_forbidden_text(text, mask, [r"\\vspace\{(.*?)\}", r"\\hspace\{(.*?)\}", r"\\label\{(.*?)\}", r"\\begin\{(.*?)\}", r"\\end\{(.*?)\}", r"\\item "])
+    text, mask = set_forbidden_text_careful_brace(text, mask, r"\\hl\{(.*?)\}", re.DOTALL)
+    # reverse 操作必须放在最后
+    text, mask = reverse_forbidden_text_careful_brace(text, mask, r"\\caption\{(.*?)\}", re.DOTALL, forbid_wrapper=True)
+    text, mask = reverse_forbidden_text_careful_brace(text, mask, r"\\abstract\{(.*?)\}", re.DOTALL, forbid_wrapper=True)
+    text, mask = reverse_forbidden_text(text, mask, r"\\begin\{abstract\}(.*?)\\end\{abstract\}", re.DOTALL, forbid_wrapper=True)
     root = convert_to_linklist(text, mask)
 
     # 修复括号
@@ -372,7 +418,7 @@ def split_subprocess(txt, project_folder, return_dict, opts):
         prev_node = node
         node = node.next
         if node is None: break
-
+    # 输出html调试文件，用红色标注处保留区（PRESERVE），用黑色标注转换区（TRANSFORM）
     with open(pj(project_folder, 'debug_log.html'), 'w', encoding='utf8') as f:
         segment_parts_for_gpt = []
         nodes = []
@@ -403,7 +449,7 @@ class LatexPaperSplit():
     """
     def __init__(self) -> None:
         self.nodes = None
-        self.msg = "{\\scriptsize\\textbf{警告：該PDF由GPT-Academic開源項目調用大語言模型+Latex翻譯插件一鍵生成，" + \
+        self.msg = "*{\\scriptsize\\textbf{警告：該PDF由GPT-Academic開源項目調用大語言模型+Latex翻譯插件一鍵生成，" + \
             "版權歸原文作者所有。翻譯內容可靠性無保障，請仔細鑑別並以原文為準。" + \
             "項目地址 \\url{https://ai6.mister5.net/}。"
         # 请您不要删除或修改这行警告，除非您是论文的原作者（如果您是论文原作者，欢迎加REAME中的QQ联系开发者）
@@ -424,8 +470,14 @@ class LatexPaperSplit():
         if mode == 'translate_zh':
             pattern = re.compile(r'\\begin\{abstract\}.*\n')
             match = pattern.search(result_string)
-            assert match is not None, "Cannot find paper abstract section!"
-            position = match.end()
+            if not match:
+                # match \abstract{xxxx}
+                pattern_compile = re.compile(r"\\abstract\{(.*?)\}", flags=re.DOTALL)
+                match = pattern_compile.search(result_string)
+                position = match.regs[1][0]
+            else:
+                # match \begin{abstract}xxxx\end{abstract}
+                position = match.end()
             result_string = result_string[:position] + self.msg + msg + self.msg_declare + result_string[position:]
         return result_string
 
@@ -444,6 +496,7 @@ class LatexPaperSplit():
             args=(txt, project_folder, return_dict, opts))
         p.start()
         p.join()
+        p.close()
         self.nodes = return_dict['nodes']
         self.sp = return_dict['segment_parts_for_gpt']
         return self.sp
@@ -498,11 +551,11 @@ class LatexPaperFileGroup():
                 f.write(res)
         return manifest
 
-def write_html(sp_file_contents, sp_file_result, chatbot):
+def write_html(sp_file_contents, sp_file_result, chatbot, project_folder):
 
     # write html
     try:
-        import copy
+        import shutil
         from .crazy_utils import construct_html
         from toolbox import gen_time_str
         ch = construct_html() 
@@ -520,6 +573,7 @@ def write_html(sp_file_contents, sp_file_result, chatbot):
                 ch.add_row(a=orig, b=trans)
         create_report_file_name = f"{gen_time_str()}.trans.html"
         ch.save_file(create_report_file_name)
+        shutil.copyfile(pj('./gpt_log/', create_report_file_name), pj(project_folder, create_report_file_name))
         promote_file_to_downloadzone(file=f'./gpt_log/{create_report_file_name}', chatbot=chatbot)
     except:
         from toolbox import trimmed_format_exc
@@ -600,7 +654,7 @@ def Latex精细分解与转化(file_manifest, project_folder, llm_kwargs, plugin
         pfg.get_token_num = None
         objdump(pfg, file=pj(project_folder,'temp.pkl'))
 
-    write_html(pfg.sp_file_contents, pfg.sp_file_result, chatbot=chatbot)
+    write_html(pfg.sp_file_contents, pfg.sp_file_result, chatbot=chatbot, project_folder=project_folder)
 
     #  <-------- 写出文件 ----------> 
     msg = f"當前大語言模型: {llm_kwargs['llm_model']}，當前語言模型溫度設定: {llm_kwargs['temperature']}。"
@@ -637,10 +691,9 @@ def remove_buggy_lines(file_path, log_path, tex_name, tex_name_pure, n_fix, work
         print("Fatal error occurred, but we cannot identify error, please download zip, read latex log, and compile manually.")
         return False, -1, [-1]
     
-
-def compile_latex_with_timeout(command, timeout=60):
+def compile_latex_with_timeout(command, cwd, timeout=60):
     import subprocess
-    process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=cwd)
     try:
         stdout, stderr = process.communicate(timeout=timeout)
     except subprocess.TimeoutExpired:
@@ -664,24 +717,24 @@ def 编译Latex(chatbot, history, main_file_original, main_file_modified, work_f
 
         # https://stackoverflow.com/questions/738755/dont-make-me-manually-abort-a-latex-compile-when-theres-an-error
         yield from update_ui_lastest_msg(f'嘗試第 {n_fix}/{max_try} 次編譯, 編譯原始PDF ...', chatbot, history)   # 刷新Gradio前端界面
-        os.chdir(work_folder_original); ok = compile_latex_with_timeout(f'pdflatex -interaction=batchmode -file-line-error {main_file_original}.tex'); os.chdir(current_dir)
+        ok = compile_latex_with_timeout(f'pdflatex -interaction=batchmode -file-line-error {main_file_original}.tex', work_folder_original)
 
         yield from update_ui_lastest_msg(f'嘗試第 {n_fix}/{max_try} 次編譯, 編譯轉化後的PDF ...', chatbot, history)   # 刷新Gradio前端界面
-        os.chdir(work_folder_modified); ok = compile_latex_with_timeout(f'pdflatex -interaction=batchmode -file-line-error {main_file_modified}.tex'); os.chdir(current_dir)
+        ok = compile_latex_with_timeout(f'pdflatex -interaction=batchmode -file-line-error {main_file_modified}.tex', work_folder_modified)
         
         if ok and os.path.exists(pj(work_folder_modified, f'{main_file_modified}.pdf')):
             # 只有第二步成功，才能继续下面的步骤
             yield from update_ui_lastest_msg(f'嘗試第 {n_fix}/{max_try} 次編譯, 編譯BibTex ...', chatbot, history)    # 刷新Gradio前端界面
             if not os.path.exists(pj(work_folder_original, f'{main_file_original}.bbl')):
-                os.chdir(work_folder_original); ok = compile_latex_with_timeout(f'bibtex  {main_file_original}.aux'); os.chdir(current_dir)
+                ok = compile_latex_with_timeout(f'bibtex  {main_file_original}.aux', work_folder_original)
             if not os.path.exists(pj(work_folder_modified, f'{main_file_modified}.bbl')):
-                os.chdir(work_folder_modified); ok = compile_latex_with_timeout(f'bibtex  {main_file_modified}.aux'); os.chdir(current_dir)
+                ok = compile_latex_with_timeout(f'bibtex  {main_file_modified}.aux', work_folder_modified)
 
             yield from update_ui_lastest_msg(f'嘗試第 {n_fix}/{max_try} 次編譯, 編譯文獻交叉引用 ...', chatbot, history)  # 刷新Gradio前端界面
-            os.chdir(work_folder_original); ok = compile_latex_with_timeout(f'pdflatex -interaction=batchmode -file-line-error {main_file_original}.tex'); os.chdir(current_dir)
-            os.chdir(work_folder_modified); ok = compile_latex_with_timeout(f'pdflatex -interaction=batchmode -file-line-error {main_file_modified}.tex'); os.chdir(current_dir)
-            os.chdir(work_folder_original); ok = compile_latex_with_timeout(f'pdflatex -interaction=batchmode -file-line-error {main_file_original}.tex'); os.chdir(current_dir)
-            os.chdir(work_folder_modified); ok = compile_latex_with_timeout(f'pdflatex -interaction=batchmode -file-line-error {main_file_modified}.tex'); os.chdir(current_dir)
+            ok = compile_latex_with_timeout(f'pdflatex -interaction=batchmode -file-line-error {main_file_original}.tex', work_folder_original)
+            ok = compile_latex_with_timeout(f'pdflatex -interaction=batchmode -file-line-error {main_file_modified}.tex', work_folder_modified)
+            ok = compile_latex_with_timeout(f'pdflatex -interaction=batchmode -file-line-error {main_file_original}.tex', work_folder_original)
+            ok = compile_latex_with_timeout(f'pdflatex -interaction=batchmode -file-line-error {main_file_modified}.tex', work_folder_modified)
 
             if mode!='translate_zh':
                 yield from update_ui_lastest_msg(f'嘗試第 {n_fix}/{max_try} 次編譯, 使用latexdiff生成論文轉化前後對比 ...', chatbot, history) # 刷新Gradio前端界面
@@ -689,13 +742,11 @@ def 编译Latex(chatbot, history, main_file_original, main_file_modified, work_f
                 ok = compile_latex_with_timeout(f'latexdiff --encoding=utf8 --append-safecmd=subfile {work_folder_original}/{main_file_original}.tex  {work_folder_modified}/{main_file_modified}.tex --flatten > {work_folder}/merge_diff.tex')
 
                 yield from update_ui_lastest_msg(f'嘗試第 {n_fix}/{max_try} 次編譯, 正在編譯對比PDF ...', chatbot, history)   # 刷新Gradio前端界面
-                os.chdir(work_folder); ok = compile_latex_with_timeout(f'pdflatex  -interaction=batchmode -file-line-error merge_diff.tex'); os.chdir(current_dir)
-                os.chdir(work_folder); ok = compile_latex_with_timeout(f'bibtex    merge_diff.aux'); os.chdir(current_dir)
-                os.chdir(work_folder); ok = compile_latex_with_timeout(f'pdflatex  -interaction=batchmode -file-line-error merge_diff.tex'); os.chdir(current_dir)
-                os.chdir(work_folder); ok = compile_latex_with_timeout(f'pdflatex  -interaction=batchmode -file-line-error merge_diff.tex'); os.chdir(current_dir)
+                ok = compile_latex_with_timeout(f'pdflatex  -interaction=batchmode -file-line-error merge_diff.tex', work_folder)
+                ok = compile_latex_with_timeout(f'bibtex    merge_diff.aux', work_folder)
+                ok = compile_latex_with_timeout(f'pdflatex  -interaction=batchmode -file-line-error merge_diff.tex', work_folder)
+                ok = compile_latex_with_timeout(f'pdflatex  -interaction=batchmode -file-line-error merge_diff.tex', work_folder)
 
-        # <--------------------->
-        os.chdir(current_dir)
 
         # <---------- 检查结果 ----------->
         results_ = ""
@@ -707,13 +758,15 @@ def 编译Latex(chatbot, history, main_file_original, main_file_modified, work_f
         results_ += f"對比PDF編譯是否成功: {diff_pdf_success};" 
         yield from update_ui_lastest_msg(f'第{n_fix}編譯結束:<br/>{results_}...', chatbot, history) # 刷新Gradio前端界面
 
+        if diff_pdf_success:
+            result_pdf = pj(work_folder_modified, f'merge_diff.pdf')    # get pdf path
+            promote_file_to_downloadzone(result_pdf, rename_file=None, chatbot=chatbot)  # promote file to web UI
         if modified_pdf_success:
             yield from update_ui_lastest_msg(f'轉化PDF編譯已經成功, 即將退出...', chatbot, history)    # 刷新Gradio前端界面
-            os.chdir(current_dir)
-            result_pdf = pj(work_folder_modified, f'{main_file_modified}.pdf')
+            result_pdf = pj(work_folder_modified, f'{main_file_modified}.pdf') # get pdf path
             if os.path.exists(pj(work_folder, '..', 'translation')):
                 shutil.copyfile(result_pdf, pj(work_folder, '..', 'translation', 'translate_zh.pdf'))
-            promote_file_to_downloadzone(result_pdf, rename_file=None, chatbot=chatbot)
+            promote_file_to_downloadzone(result_pdf, rename_file=None, chatbot=chatbot)  # promote file to web UI
             return True # 成功啦
         else:
             if n_fix>=max_try: break
@@ -729,7 +782,6 @@ def 编译Latex(chatbot, history, main_file_original, main_file_modified, work_f
             yield from update_ui_lastest_msg(f'由於最為關鍵的轉化PDF編譯失敗, 將根據報錯信息修正tex源文件並重試, 當前報錯的latex代碼處於第{buggy_lines}行...', chatbot, history)   # 刷新Gradio前端界面
             if not can_retry: break
 
-    os.chdir(current_dir)
     return False # 失败啦
 
 
