@@ -12,6 +12,8 @@ def check_proxy(proxies):
             result = f"代理配置 {proxies_https}, 代理所在地：{country}"
         elif 'error' in data:
             result = f"代理配置 {proxies_https}, 代理所在地：未知，IP查詢頻率受限"
+        else:
+            result = f"代理配置 {proxies_https}, 代理數據解析失敗：{data}"
         print(result)
         return result
     except:
