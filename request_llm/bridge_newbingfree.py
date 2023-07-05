@@ -51,10 +51,10 @@ class NewBingHandle(Process):
         try:
             self.success = False
             import certifi, httpx, rich
-            self.info = "依赖检测通过，等待NewBing响应。注意目前不能多人同时调用NewBing接口（有线程锁），否则将导致每个人的NewBing问询历史互相渗透。调用NewBing时，会自动使用已配置的代理。"
+            self.info = "依賴檢測通過，等待NewBing響應。注意目前不能多人同時調用NewBing接口（有線程鎖），否則將導致每個人的NewBing問詢歷史互相滲透。調用NewBing時，會自動使用已配置的代理。"
             self.success = True
         except:
-            self.info = "缺少的依赖，如果要使用Newbing，除了基础的pip依赖以外，您还需要运行`pip install -r request_llm/requirements_newbing.txt`安装Newbing的依赖。"
+            self.info = "缺少的依賴，如果要使用Newbing，除了基礎的pip依賴以外，您還需要運行`pip install -r request_llm/requirements_newbing.txt`安裝Newbing的依賴。"
             self.success = False
 
     def ready(self):
@@ -89,9 +89,6 @@ class NewBingHandle(Process):
                 if a not in self.local_history:
                     self.local_history.append(a)
                     prompt += a + '\n'
-                # if b not in self.local_history:
-                #     self.local_history.append(b)
-                #     prompt += b + '\n'
 
             # 问题
             prompt += question
@@ -101,7 +98,7 @@ class NewBingHandle(Process):
             async for final, response in self.newbing_model.ask_stream(
                 prompt=question,
                 conversation_style=NEWBING_STYLE,     # ["creative", "balanced", "precise"]
-                wss_link=endpoint,                      # "wss://sydney.bing.com/sydney/ChatHub"
+                wss_link=endpoint,                    # "wss://sydney.bing.com/sydney/ChatHub"
             ):
                 if not final:
                     print(response)
@@ -121,21 +118,33 @@ class NewBingHandle(Process):
         self.local_history = []
         if (self.newbing_model is None) or (not self.success):
             # 代理设置
-            proxies, = get_conf('proxies')
+            proxies, NEWBING_COOKIES = get_conf('proxies', 'NEWBING_COOKIES')
             if proxies is None: 
                 self.proxies_https = None
             else: 
                 self.proxies_https = proxies['https']
 
+            if (NEWBING_COOKIES is not None) and len(NEWBING_COOKIES) > 100:
+                try:
+                    cookies = json.loads(NEWBING_COOKIES)
+                except:
+                    self.success = False
+                    tb_str = '\n```\n' + trimmed_format_exc() + '\n```\n'
+                    self.child.send(f'[Local Message] NEWBING_COOKIES未填寫或有格式錯誤。')
+                    self.child.send('[Fail]'); self.child.send('[Finish]')
+                    raise RuntimeError(f"NEWBING_COOKIES未填寫或有格式錯誤。")
+            else:
+                cookies = None
+
             try:
-                self.newbing_model = NewbingChatbot(proxy=self.proxies_https)
+                self.newbing_model = NewbingChatbot(proxy=self.proxies_https, cookies=cookies)
             except:
                 self.success = False
                 tb_str = '\n```\n' + trimmed_format_exc() + '\n```\n'
-                self.child.send(f'[Local Message] 不能加载Newbing组件。{tb_str}')
+                self.child.send(f'[Local Message] 不能加載Newbing組件。{tb_str}')
                 self.child.send('[Fail]')
                 self.child.send('[Finish]')
-                raise RuntimeError(f"不能加载Newbing组件。")
+                raise RuntimeError(f"不能加載Newbing組件。")
 
         self.success = True
         try:
@@ -143,7 +152,7 @@ class NewBingHandle(Process):
             asyncio.run(self.async_run())
         except Exception:
             tb_str = '\n```\n' + trimmed_format_exc() + '\n```\n'
-            self.child.send(f'[Local Message] Newbing失敗 {tb_str}.')
+            self.child.send(f'[Local Message] Newbing 請求失敗，報錯信息如下. 如果是與網絡相關的問題，建議更換代理協議（推薦http）或代理節點 {tb_str}.')
             self.child.send('[Fail]')
             self.child.send('[Finish]')
         
@@ -151,18 +160,14 @@ class NewBingHandle(Process):
         """
         这个函数运行在主进程
         """
-        self.threadLock.acquire()
-        self.parent.send(kwargs)    # 发送请求到子进程
+        self.threadLock.acquire()   # 获取线程锁
+        self.parent.send(kwargs)    # 请求子进程
         while True:
-            res = self.parent.recv()    # 等待newbing回复的片段
-            if res == '[Finish]':
-                break       # 结束
-            elif res == '[Fail]':
-                self.success = False
-                break
-            else:
-                yield res   # newbing回复的片段
-        self.threadLock.release()
+            res = self.parent.recv()                            # 等待newbing回复的片段
+            if res == '[Finish]': break                         # 结束
+            elif res == '[Fail]': self.success = False; break   # 失败
+            else: yield res                                     # newbing回复的片段
+        self.threadLock.release()   # 释放线程锁
 
 
 """
