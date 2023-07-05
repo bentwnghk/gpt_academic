@@ -13,6 +13,7 @@ COPY . .
 # 安装依赖
 RUN pip3 install -r requirements.txt
 RUN pip3 install -r request_llm/requirements_slackclaude.txt
+RUN pip3 install -r request_llm/requirements_newbing.txt
 RUN pip3 install --upgrade moviepy
 
 # 可选步骤，用于预热模块
