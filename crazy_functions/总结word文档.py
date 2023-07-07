@@ -26,7 +26,7 @@ def 解析docx(file_manifest, project_folder, llm_kwargs, plugin_kwargs, chatbot
                 doc.Close()
                 word.Quit()
             except:
-                raise RuntimeError('请先将.doc文档转换为.docx文档。')
+                raise RuntimeError('請先將.doc文檔轉換為.docx文檔。')
 
         print(file_content)
         # private_upload里面的文件名在解压zip后容易出现乱码（rar和7z格式正常），故可以只分析文章内容，不输入文件名
@@ -42,7 +42,7 @@ def 解析docx(file_manifest, project_folder, llm_kwargs, plugin_kwargs, chatbot
         this_paper_history = []
         for i, paper_frag in enumerate(paper_fragments):
             i_say = f'請對下面的文章片段用繁體中文做概述，文件名是{os.path.relpath(fp, project_folder)}，文章内容是 ```{paper_frag}```'
-            i_say_show_user = f'请对下面的文章片段做概述: {os.path.abspath(fp)}的第{i+1}/{len(paper_fragments)}個片段。'
+            i_say_show_user = f'請對下面的文章片段做概述: {os.path.abspath(fp)}的第{i+1}/{len(paper_fragments)}個片段。'
             gpt_say = yield from request_gpt_model_in_new_thread_with_ui_alive(
                 inputs=i_say, 
                 inputs_show_user=i_say_show_user, 
