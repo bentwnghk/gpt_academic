@@ -70,7 +70,7 @@ MAX_RETRY = 2
 
 # 模型选择是 (注意: LLM_MODEL是默认选中的模型, 它*必须*被包含在AVAIL_LLM_MODELS列表中 )
 LLM_MODEL = "gpt-3.5-turbo" # 可选 ↓↓↓
-AVAIL_LLM_MODELS = ["gpt-3.5-turbo-16k", "gpt-3.5-turbo", "azure-gpt35", "api2d-gpt-3.5-turbo", "gpt-4", "api2d-gpt-4", "chatglm", "moss", "newbing", "stack-claude"]
+AVAIL_LLM_MODELS = ["gpt-3.5-turbo-16k", "gpt-3.5-turbo", "azure-gpt-3.5", "api2d-gpt-3.5-turbo", "gpt-4", "api2d-gpt-4", "chatglm", "moss", "newbing", "stack-claude"]
 # P.S. 其他可用的模型还包括 ["gpt-3.5-turbo-0613", "gpt-3.5-turbo-16k-0613", "newbing-free", "jittorllms_rwkv", "jittorllms_pangualpha", "jittorllms_llama"]
 
 
@@ -109,10 +109,10 @@ SLACK_CLAUDE_USER_TOKEN = ''
 
 
 # 如果需要使用AZURE 详情请见额外文档 docs\use_azure.md
-AZURE_ENDPOINT = "https://你的api名称.openai.azure.com/"
+AZURE_ENDPOINT = "https://你亲手写的api名称.openai.azure.com/"
 AZURE_API_KEY = "填入azure openai api的密钥"
-AZURE_API_VERSION = "填入api版本"
-AZURE_ENGINE = "填入ENGINE"
+AZURE_API_VERSION = "2023-05-15"        # 一般不修改
+AZURE_ENGINE = "填入你亲手写的部署名"     # 读 docs\use_azure.md
 
 
 # 使用Newbing
