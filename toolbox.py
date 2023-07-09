@@ -4,6 +4,7 @@ import time
 import inspect
 import re
 import os
+import gradio
 from latex2mathml.converter import convert as tex2mathml
 from functools import wraps, lru_cache
 pj = os.path.join
@@ -40,7 +41,7 @@ def ArgsGeneralWrapper(f):
     """
     装饰器函数，用于重组输入参数，改变输入参数的顺序与结构。
     """
-    def decorated(cookies, max_length, llm_model, txt, txt2, top_p, temperature, chatbot, history, system_prompt, plugin_advanced_arg, *args):
+    def decorated(request: gradio.Request, cookies, max_length, llm_model, txt, txt2, top_p, temperature, chatbot, history, system_prompt, plugin_advanced_arg, *args):
         txt_passon = txt
         if txt == "" and txt2 != "": txt_passon = txt2
         # 引入一个有cookie的chatbot
@@ -54,13 +55,21 @@ def ArgsGeneralWrapper(f):
             'top_p':top_p,
             'max_length': max_length,
             'temperature':temperature,
+            'client_ip': request.client.host,
         }
         plugin_kwargs = {
             "advanced_arg": plugin_advanced_arg,
         }
         chatbot_with_cookie = ChatBotWithCookies(cookies)
         chatbot_with_cookie.write_list(chatbot)
-        yield from f(txt_passon, llm_kwargs, plugin_kwargs, chatbot_with_cookie, history, system_prompt, *args)
+        if cookies.get('lock_plugin', None) is None:
+            # 正常状态
+            yield from f(txt_passon, llm_kwargs, plugin_kwargs, chatbot_with_cookie, history, system_prompt, *args)
+        else:
+            # 处理个别特殊插件的锁定状态
+            module, fn_name = cookies['lock_plugin'].split('->')
+            f_hot_reload = getattr(importlib.import_module(module, fn_name), fn_name)
+            yield from f_hot_reload(txt_passon, llm_kwargs, plugin_kwargs, chatbot_with_cookie, history, system_prompt, *args)
     return decorated
 
 
@@ -69,7 +78,20 @@ def update_ui(chatbot, history, msg='正常', **kwargs):  # 刷新界面
     刷新用户界面
     """
     assert isinstance(chatbot, ChatBotWithCookies), "在傳遞chatbot的過程中不要將其丟棄。必要時，可用clear將其清空，然後用for+append循環重新賦值。"
-    yield chatbot.get_cookies(), chatbot, history, msg
+    cookies = chatbot.get_cookies()
+
+    # 解决插件锁定时的界面显示问题
+    if cookies.get('lock_plugin', None):
+        label = cookies.get('llm_model', "") + " | " + "正在鎖定插件" + cookies.get('lock_plugin', None)
+        chatbot_gr = gradio.update(value=chatbot, label=label)
+        if cookies.get('label', "") != label: cookies['label'] = label   # 记住当前的label
+    elif cookies.get('label', None):
+        chatbot_gr = gradio.update(value=chatbot, label=cookies.get('llm_model', ""))
+        cookies['label'] = None    # 清空label
+    else:
+        chatbot_gr = chatbot
+
+    yield cookies, chatbot_gr, history, msg
 
 def update_ui_lastest_msg(lastmsg, chatbot, history, delay=1):  # 刷新界面
     """
@@ -505,16 +527,24 @@ def on_report_generated(cookies, files, chatbot):
     chatbot.append(['報告如何遠程獲取？', f'報告已經添加到右側“文件上傳區”（可能處於折疊狀態），請查收。{file_links}'])
     return cookies, report_files, chatbot
 
+def load_chat_cookies():
+    API_KEY, LLM_MODEL, AZURE_API_KEY = get_conf('API_KEY', 'LLM_MODEL', 'AZURE_API_KEY')
+    if is_any_api_key(AZURE_API_KEY):
+        if is_any_api_key(API_KEY): API_KEY = API_KEY + ',' + AZURE_API_KEY
+        else: API_KEY = AZURE_API_KEY
+    return {'api_key': API_KEY, 'llm_model': LLM_MODEL}
+
 def is_openai_api_key(key):
     API_MATCH_ORIGINAL = re.match(r"sk-[a-zA-Z0-9]{48}$", key)
+    return bool(API_MATCH_ORIGINAL)
+
+def is_azure_api_key(key):
     API_MATCH_AZURE = re.match(r"[a-zA-Z0-9]{32}$", key)
-    return bool(API_MATCH_ORIGINAL) or bool(API_MATCH_AZURE)
+    return bool(API_MATCH_AZURE)
 
 def is_api2d_key(key):
-    if key.startswith('fk') and len(key) == 41:
-        return True
-    else:
-        return False
+    API_MATCH_API2D = re.match(r"fk[a-zA-Z0-9]{6}-[a-zA-Z0-9]{32}$", key)
+    return bool(API_MATCH_API2D)
 
 def is_any_api_key(key):
     if ',' in key:
@@ -523,10 +553,10 @@ def is_any_api_key(key):
             if is_any_api_key(k): return True
         return False
     else:
-        return is_openai_api_key(key) or is_api2d_key(key)
+        return is_openai_api_key(key) or is_api2d_key(key) or is_azure_api_key(key)
 
 def what_keys(keys):
-    avail_key_list = {'OpenAI Key':0, "API2D Key":0}
+    avail_key_list = {'OpenAI Key':0, "Azure Key":0, "API2D Key":0}
     key_list = keys.split(',')
 
     for k in key_list:
@@ -537,7 +567,11 @@ def what_keys(keys):
         if is_api2d_key(k): 
             avail_key_list['API2D Key'] += 1
 
-    return f"檢測到： OpenAI Key {avail_key_list['OpenAI Key']} 個，API2D Key {avail_key_list['API2D Key']} 個"
+    for k in key_list:
+        if is_azure_api_key(k): 
+            avail_key_list['Azure Key'] += 1
+
+    return f"檢測到： OpenAI Key {avail_key_list['OpenAI Key']} 個, Azure Key {avail_key_list['Azure Key']} 個, API2D Key {avail_key_list['API2D Key']} 个"
 
 def select_api_key(keys, llm_model):
     import random
@@ -552,8 +586,12 @@ def select_api_key(keys, llm_model):
         for k in key_list:
             if is_api2d_key(k): avail_key_list.append(k)
 
+    if llm_model.startswith('azure-'):
+        for k in key_list:
+            if is_azure_api_key(k): avail_key_list.append(k)
+
     if len(avail_key_list) == 0:
-        raise RuntimeError(f"您提供的api-key不滿足要求，不包含任何可用於{llm_model}的api-key。您可能選擇了錯誤的AI/LLM模型。")
+        raise RuntimeError(f"您提供的api-key不滿足要求，不包含任何可用於{llm_model}的api-key。您可能選擇了錯誤的模型或請求源（右下角更換模型菜單中可切換openai,azure和api2d請求源）")
 
     api_key = random.choice(avail_key_list) # 随机负载均衡
     return api_key

@@ -4,10 +4,10 @@ def main():
     import gradio as gr
     if gr.__version__ not in ['3.28.3','3.32.2']: assert False, "需要特殊依賴，請務必用 pip install -r requirements.txt 指令安裝依賴，詳情信息見requirements.txt"
     from request_llm.bridge_all import predict
-    from toolbox import format_io, find_free_port, on_file_uploaded, on_report_generated, get_conf, ArgsGeneralWrapper, DummyWith
+    from toolbox import format_io, find_free_port, on_file_uploaded, on_report_generated, get_conf, ArgsGeneralWrapper, load_chat_cookies, DummyWith
     # 建议您复制一个config_private.py放自己的秘密, 如API和代理网址, 避免不小心传github被别人看到
-    proxies, WEB_PORT, LLM_MODEL, CONCURRENT_COUNT, AUTHENTICATION, CHATBOT_HEIGHT, LAYOUT, API_KEY, AVAIL_LLM_MODELS, AUTO_CLEAR_TXT = \
-        get_conf('proxies', 'WEB_PORT', 'LLM_MODEL', 'CONCURRENT_COUNT', 'AUTHENTICATION', 'CHATBOT_HEIGHT', 'LAYOUT', 'API_KEY', 'AVAIL_LLM_MODELS', 'AUTO_CLEAR_TXT')
+    proxies, WEB_PORT, LLM_MODEL, CONCURRENT_COUNT, AUTHENTICATION, CHATBOT_HEIGHT, LAYOUT, AVAIL_LLM_MODELS, AUTO_CLEAR_TXT = \
+        get_conf('proxies', 'WEB_PORT', 'LLM_MODEL', 'CONCURRENT_COUNT', 'AUTHENTICATION', 'CHATBOT_HEIGHT', 'LAYOUT', 'AVAIL_LLM_MODELS', 'AUTO_CLEAR_TXT')
 
     # 如果WEB_PORT是-1, 则随机选取WEB端口
     PORT = find_free_port() if WEB_PORT <= 0 else WEB_PORT
@@ -45,23 +45,23 @@ def main():
     proxy_info = check_proxy(proxies)
 
     gr_L1 = lambda: gr.Row().style()
-    gr_L2 = lambda scale: gr.Column(scale=scale)
+    gr_L2 = lambda scale, elem_id: gr.Column(scale=scale, elem_id=elem_id)
     if LAYOUT == "TOP-DOWN":
         gr_L1 = lambda: DummyWith()
-        gr_L2 = lambda scale: gr.Row()
+        gr_L2 = lambda scale, elem_id: gr.Row()
         CHATBOT_HEIGHT /= 2
 
     cancel_handles = []
     with gr.Blocks(title="ChatGPT 學術優化", theme=set_theme, analytics_enabled=False, css=advanced_css) as demo:
         gr.HTML(title_html)
-        cookies = gr.State({'api_key': API_KEY, 'llm_model': LLM_MODEL})
+        cookies = gr.State(load_chat_cookies())
         with gr_L1():
-            with gr_L2(scale=2):
-                chatbot = gr.Chatbot(label=f"當前模型：{LLM_MODEL}")
-                chatbot.style(height=CHATBOT_HEIGHT)
+            with gr_L2(scale=2, elem_id="gpt-chat"):
+                chatbot = gr.Chatbot(label=f"當前模型：{LLM_MODEL}", elem_id="gpt-chatbot")
+                if LAYOUT == "TOP-DOWN":  chatbot.style(height=CHATBOT_HEIGHT)
                 history = gr.State([])
-            with gr_L2(scale=1):
-                with gr.Accordion("輸入區", open=True) as area_input_primary:
+            with gr_L2(scale=1, elem_id="gpt-panel"):
+                with gr.Accordion("輸入區", open=True, elem_id="input-panel") as area_input_primary:
                     with gr.Row():
                         txt = gr.Textbox(show_label=False, placeholder="在此輸入您的問題...").style(container=False)
                     with gr.Row():
@@ -71,14 +71,14 @@ def main():
                         stopBtn = gr.Button("停止", variant="secondary"); stopBtn.style(size="sm")
                         clearBtn = gr.Button("清除", variant="secondary", visible=False); clearBtn.style(size="sm")
                     with gr.Row():
-                        status = gr.Markdown(f"提示：按Enter提交，按Shift+Enter換行。當前模型: {LLM_MODEL} \n {proxy_info}")
-                with gr.Accordion("基礎功能區", open=True) as area_basic_fn:
+                        status = gr.Markdown(f"提示：按Enter提交，按Shift+Enter換行。當前模型: {LLM_MODEL} \n {proxy_info}", elem_id="state-panel")
+                with gr.Accordion("基礎功能區", open=True, elem_id="basic-panel") as area_basic_fn:
                     with gr.Row():
                         for k in functional:
                             if ("Visible" in functional[k]) and (not functional[k]["Visible"]): continue
                             variant = functional[k]["Color"] if "Color" in functional[k] else "secondary"
                             functional[k]["Button"] = gr.Button(k, variant=variant)
-                with gr.Accordion("函數插件區", open=True) as area_crazy_fn:
+                with gr.Accordion("函數插件區", open=True, elem_id="plugin-panel") as area_crazy_fn:
                     with gr.Row():
                         gr.Markdown("注意：以下紫色標識的函數插件需從輸入區讀取路徑作為參數")
                     with gr.Row():
@@ -100,8 +100,8 @@ def main():
                     with gr.Row():
                         with gr.Accordion("點擊展開“文件上傳區”。上傳本地文件可供紫色函數插件調用。", open=False) as area_file_up:
                             file_upload = gr.Files(label="任何文件，但推薦上傳壓縮文件(zip, tar)", file_count="multiple")
-                with gr.Accordion("更換模型 & System Prompt & 交互界面佈局", open=(LAYOUT == "TOP-DOWN")):
-                    system_prompt = gr.Textbox(show_label=True, placeholder=f"System Prompt", label="System Prompt", value=initial_prompt)
+                with gr.Accordion("更換模型 & System Prompt & 交互界面佈局", open=(LAYOUT == "TOP-DOWN"), elem_id="interact-panel"):
+                    system_prompt = gr.Textbox(show_label=True, placeholder=f"System Prompt", label="System prompt", value=initial_prompt)
                     top_p = gr.Slider(minimum=-0, maximum=1.0, value=1.0, step=0.01,interactive=True, label="Top-p (nucleus sampling)",)
                     temperature = gr.Slider(minimum=-0, maximum=2.0, value=1.0, step=0.01, interactive=True, label="Temperature",)
                     max_length_sl = gr.Slider(minimum=256, maximum=8192, value=4096, step=1, interactive=True, label="Local LLM MaxLength",)
@@ -109,7 +109,7 @@ def main():
                     md_dropdown = gr.Dropdown(AVAIL_LLM_MODELS, value=LLM_MODEL, label="更換AI/LLM模型").style(container=False)
 
                     gr.Markdown(description)
-                with gr.Accordion("備選輸入區", open=True, visible=False) as area_input_secondary:
+                with gr.Accordion("備選輸入區", open=True, visible=False, elem_id="input-panel2") as area_input_secondary:
                     with gr.Row():
                         txt2 = gr.Textbox(show_label=False, placeholder="在此輸入您的問題...", label="輸入區2").style(container=False)
                     with gr.Row():
@@ -176,16 +176,17 @@ def main():
             return {chatbot: gr.update(label="當前模型："+k)}
         md_dropdown.select(on_md_dropdown_changed, [md_dropdown], [chatbot] )
         # 随变按钮的回调函数注册
-        def route(k, *args, **kwargs):
+        def route(request: gr.Request, k, *args, **kwargs):
             if k in [r"打開插件列表", r"請先從插件列表中選擇"]: return
-            yield from ArgsGeneralWrapper(crazy_fns[k]["Function"])(*args, **kwargs)
+            yield from ArgsGeneralWrapper(crazy_fns[k]["Function"])(request, *args, **kwargs)
         click_handle = switchy_bt.click(route,[switchy_bt, *input_combo, gr.State(PORT)], output_combo)
         click_handle.then(on_report_generated, [cookies, file_upload, chatbot], [cookies, file_upload, chatbot])
         cancel_handles.append(click_handle)
         # 终止按钮的回调函数注册
         stopBtn.click(fn=None, inputs=None, outputs=None, cancels=cancel_handles)
         stopBtn2.click(fn=None, inputs=None, outputs=None, cancels=cancel_handles)
-
+        demo.load(lambda: 0, inputs=None, outputs=None, _js='()=>{ChatBotHeight();}')
+        
     # gradio的inbrowser触发不太稳定，回滚代码到原始的浏览器打开函数
     def auto_opentab_delay():
         import threading, webbrowser, time
