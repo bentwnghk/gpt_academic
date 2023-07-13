@@ -139,7 +139,7 @@ def auto_update(raise_error=False):
         else:
             return
     except:
-        msg = '自動更新程序：已禁用'
+        msg = '自動更新程序：已禁用。建議排查：代理網絡配置。'
         if raise_error:
             from toolbox import trimmed_format_exc
             msg += trimmed_format_exc()
