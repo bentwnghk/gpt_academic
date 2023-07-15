@@ -393,7 +393,7 @@ def get_crazy_functions():
         })
         from crazy_functions.Latex输出PDF结果 import Latex翻译中文并重新编译PDF
         function_plugins.update({
-            "Arixv翻譯（輸入arxivID） [需Latex]": {
+            "Arixv论文精细翻译（输入arxivID）[需Latex]": {
                 "Color": "stop",
                 "AsButton": False,
                 "AdvancedArgs": True,
@@ -404,7 +404,7 @@ def get_crazy_functions():
             }
         })
         function_plugins.update({
-            "本地論文翻譯（上傳Latex壓縮包）[需Latex]": {
+            "本地Latex论文精细翻译（上传Latex项目）[需Latex]": {
                 "Color": "stop",
                 "AsButton": False,
                 "AdvancedArgs": True,
@@ -417,6 +417,22 @@ def get_crazy_functions():
     except:
         print('Load function plugin failed')
 
+
+    try:
+        from toolbox import get_conf
+        ENABLE_AUDIO, = get_conf('ENABLE_AUDIO')
+        if ENABLE_AUDIO:
+            from crazy_functions.语音助手 import 语音助手
+            function_plugins.update({
+                "实时音频采集": {
+                    "Color": "stop",
+                    "AsButton": True,
+                    "Function": HotReload(语音助手)
+                }
+            })
+    except:
+        print('Load function plugin failed')
+        
     # try:
     #     from crazy_functions.虚空终端 import 终端
     #     function_plugins.update({

@@ -1,4 +1,5 @@
-name: build_docker_for_JittorLLM_support
+# https://docs.github.com/en/actions/publishing-packages/publishing-docker-images#publishing-images-to-github-packages
+name: build-with-jittorllms
 
 on:
   push:
