@@ -357,7 +357,7 @@ def get_crazy_functions():
     try:
         from crazy_functions.交互功能函数模板 import 交互功能模板函数
         function_plugins.update({
-            "交互功能模板函数": {
+            "交互功能模板函數": {
                 "Color": "stop",
                 "AsButton": False,
                 "Function": HotReload(交互功能模板函数)
@@ -369,11 +369,11 @@ def get_crazy_functions():
     # try:
     #     from crazy_functions.chatglm微调工具 import 微调数据集生成
     #     function_plugins.update({
-    #         "黑盒模型学习: 微调数据集生成 (先上传数据集)": {
+    #         "黑盒模型學習: 微調數據集生成 (先上傳數據集)": {
     #             "Color": "stop",
     #             "AsButton": False,
     #             "AdvancedArgs": True,
-    #             "ArgsReminder": "针对数据集输入（如 绿帽子*深蓝色衬衫*黑色运动裤）给出指令，例如您可以将以下命令复制到下方: --llm_to_learn=azure-gpt-3.5 --prompt_prefix='根据下面的服装类型提示，想象一个穿着者，对这个人外貌、身处的环境、内心世界、过去经历进行描写。要求：100字以内，用第二人称。' --system_prompt=''",
+    #             "ArgsReminder": "針對數據集輸入（如 綠帽子*深藍色襯衫*黑色運動褲）給出指令，例如您可以將以下命令複製到下方: --llm_to_learn=azure-gpt-3.5 --prompt_prefix='根據下面的服裝類型提示，想像一個穿著者，對這個人外貌、身處的環境、內心世界、過去經歷進行描寫。要求：100字以內，用第二人稱。 ' --system_prompt=''",
     #             "Function": HotReload(微调数据集生成)
     #         }
     #     })
@@ -393,24 +393,24 @@ def get_crazy_functions():
         })
         from crazy_functions.Latex输出PDF结果 import Latex翻译中文并重新编译PDF
         function_plugins.update({
-            "Arixv论文精细翻译（输入arxivID）[需Latex]": {
+            "Arixv論文精細翻譯（輸入arxivID）[需Latex]": {
                 "Color": "stop",
                 "AsButton": False,
                 "AdvancedArgs": True,
                 "ArgsReminder": 
-                    "如果有必要, 請在此處給出自定義翻譯命令, 解決部分詞彙翻譯不准確的問題。"+ 
-                    "例如當單詞'agent'翻譯不准確時, 請嘗試把以下指令複製到高級參數區: " + 'If the term "agent" is used in this section, it should be translated to "智能體". ',
+                    "如果有必要, 請在此處給出自定義翻譯命令, 解決部分詞彙翻譯不準確的問題。"+ 
+                    "例如當單詞'agent'翻譯不準確時, 請嘗試把以下指令複製到高級參數區: " + 'If the term "agent" is used in this section, it should be translated to "智能體". ',
                 "Function": HotReload(Latex翻译中文并重新编译PDF)
             }
         })
         function_plugins.update({
-            "本地Latex论文精细翻译（上传Latex项目）[需Latex]": {
+            "本地Latex論文精細翻譯（上傳Latex項目）[需Latex]": {
                 "Color": "stop",
                 "AsButton": False,
                 "AdvancedArgs": True,
                 "ArgsReminder": 
-                    "如果有必要, 請在此處給出自定義翻譯命令, 解決部分詞彙翻譯不准確的問題。 "+ 
-                    "例如當單詞'agent'翻譯不准確時, 請嘗試把以下指令複製到高級參數區: " + 'If the term "agent" is used in this section, it should be translated to "智能體". ',
+                    "如果有必要, 請在此處給出自定義翻譯命令, 解決部分詞彙翻譯不準確的問題。 "+ 
+                    "例如當單詞'agent'翻譯不準確時, 請嘗試把以下指令複製到高級參數區: " + 'If the term "agent" is used in this section, it should be translated to "智能體". ',
                 "Function": HotReload(Latex翻譯中文並重新編譯PDF)
             }
         })
@@ -424,7 +424,7 @@ def get_crazy_functions():
         if ENABLE_AUDIO:
             from crazy_functions.语音助手 import 语音助手
             function_plugins.update({
-                "实时音频采集": {
+                "實時音頻採集": {
                     "Color": "stop",
                     "AsButton": True,
                     "Function": HotReload(语音助手)
