@@ -14,7 +14,7 @@ def main():
     if not AUTHENTICATION: AUTHENTICATION = None
 
     from check_proxy import get_current_version
-    from theme.theme import adjust_theme, advanced_css, theme_declaration
+    from themes.theme import adjust_theme, advanced_css, theme_declaration
     initial_prompt = "Serve me as a writing and programming assistant."
     title_html = f"<h1 align=\"center\">Mr.🆖 GPT 學術優化 {get_current_version()}</h1>{theme_declaration}"
     description =  ""
