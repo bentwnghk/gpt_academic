@@ -144,11 +144,11 @@ def 下载arxiv论文并翻译摘要(txt, llm_kwargs, plugin_kwargs, chatbot, hi
 
     # 尝试导入依赖，如果缺少依赖，则给出安装建议
     try:
-        import pdfminer, bs4
+        import bs4
     except:
         report_execption(chatbot, history, 
             a = f"解析項目: {txt}", 
-            b = f"導入軟件依賴失敗。使用該模塊需要額外依賴，安裝方法```pip install --upgrade pdfminer beautifulsoup4```。")
+            b = f"導入軟件依賴失敗。使用該模塊需要額外依賴，安裝方法```pip install --upgrade beautifulsoup4```。")
         yield from update_ui(chatbot=chatbot, history=history) # 刷新界面
         return
 

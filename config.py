@@ -32,9 +32,9 @@ else:
 
 # ------------------------------------ 以下配置可以优化体验, 但大部分场合下并不需要修改 ------------------------------------
 
-# 重新URL重新定向，实现更换API_URL的作用（常规情况下，不要修改!! 高危设置！通过修改此设置，您将把您的API-KEY和对话隐私完全暴露给您设定的中间人！）
-# 格式 API_URL_REDIRECT = {"https://api.openai.com/v1/chat/completions": "在这里填写重定向的api.openai.com的URL"} 
-# 例如 API_URL_REDIRECT = {"https://api.openai.com/v1/chat/completions":"https://reverse-proxy-url/v1/chat/completions"}
+# 重新URL重新定向，实现更换API_URL的作用（高危设置! 常规情况下不要修改! 通过修改此设置，您将把您的API-KEY和对话隐私完全暴露给您设定的中间人！）
+# 格式: API_URL_REDIRECT = {"https://api.openai.com/v1/chat/completions": "在这里填写重定向的api.openai.com的URL"} 
+# 举例: API_URL_REDIRECT = {"https://api.openai.com/v1/chat/completions": "https://reverse-proxy-url/v1/chat/completions"}
 API_URL_REDIRECT = {}
 
 
@@ -71,7 +71,7 @@ MAX_RETRY = 2
 # 模型选择是 (注意: LLM_MODEL是默认选中的模型, 它*必须*被包含在AVAIL_LLM_MODELS列表中 )
 LLM_MODEL = "gpt-3.5-turbo" # 可选 ↓↓↓
 AVAIL_LLM_MODELS = ["gpt-3.5-turbo-16k", "gpt-3.5-turbo", "azure-gpt-3.5", "api2d-gpt-3.5-turbo", "gpt-4", "api2d-gpt-4", "chatglm", "moss", "newbing", "stack-claude"]
-# P.S. 其他可用的模型还包括 ["gpt-3.5-turbo-0613", "gpt-3.5-turbo-16k-0613", "claude-1-100k", "claude-2", "jittorllms_rwkv", "jittorllms_pangualpha", "jittorllms_llama"]
+# P.S. 其他可用的模型还包括 ["gpt-3.5-turbo-0613", "gpt-3.5-turbo-16k-0613", "claude-1-100k", "claude-2", "internlm", "jittorllms_rwkv", "jittorllms_pangualpha", "jittorllms_llama"]
 
 
 # ChatGLM(2) Finetune Model Path （如果使用ChatGLM2微调模型，需要把"chatglmft"加入AVAIL_LLM_MODELS中）
