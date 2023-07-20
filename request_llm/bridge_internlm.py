@@ -8,7 +8,7 @@ from multiprocessing import Process, Pipe
 
 model_name = "InternLM"
 cmd_to_install = "`pip install ???`"
-load_message = f"{model_name}尚未加载，加载需要一段时间。注意，取决于`config.py`的配置，{model_name}消耗大量的内存（CPU）或显存（GPU），也许会导致低配计算机卡死 ……"
+load_message = f"{model_name}尚未加載，加載需要一段時間。注意，取決於`config.py`的配置，{model_name}消耗大量的內存（CPU）或顯存（GPU），也許會導致低配計算機卡死 ……"
 def try_to_import_special_deps():
     import sentencepiece
 
@@ -201,10 +201,10 @@ class GetInternlmHandle(Process):
         # 🏃‍♂️🏃‍♂️🏃‍♂️ 子进程执行
         try:
             try_to_import_special_deps()
-            self.info = "依赖检测通过"
+            self.info = "依賴檢測通過"
             self.success = True
         except:
-            self.info = f"缺少{model_name}的依赖，如果要使用{model_name}，除了基础的pip依赖以外，您还需要运行{cmd_to_install}安装{model_name}的依赖。"
+            self.info = f"缺少{model_name}的依賴，如果要使用{model_name}，除了基礎的pip依賴以外，您還需要運行{cmd_to_install}安裝{model_name}的依賴。"
             self.success = False
 
     def run(self):
@@ -214,8 +214,8 @@ class GetInternlmHandle(Process):
             self._model, self._tokenizer = self.load_model_and_tokenizer()
         except:
             from toolbox import trimmed_format_exc
-            self.child.send(f'[Local Message] 不能正常加载{model_name}的参数.' + '\n```\n' + trimmed_format_exc() + '\n```\n')
-            raise RuntimeError(f"不能正常加载{model_name}的参数！")
+            self.child.send(f'[Local Message] 不能正常加載{model_name}的參數.' + '\n```\n' + trimmed_format_exc() + '\n```\n')
+            raise RuntimeError(f"不能正常加載{model_name}的參數！")
 
         while True:
             # 进入任务等待状态
@@ -226,7 +226,7 @@ class GetInternlmHandle(Process):
                     self.child.send(response_full)
             except:
                 from toolbox import trimmed_format_exc
-                self.child.send(f'[Local Message] 调用{model_name}失败.' + '\n```\n' + trimmed_format_exc() + '\n```\n')
+                self.child.send(f'[Local Message] 調用{model_name}失敗.' + '\n```\n' + trimmed_format_exc() + '\n```\n')
             # 请求处理结束，开始下一个循环
             self.child.send('[Finish]')
 
@@ -270,7 +270,7 @@ def predict_no_ui_long_connection(inputs, llm_kwargs, history=[], sys_prompt="",
         if len(observe_window) >= 1:  observe_window[0] = response
         if len(observe_window) >= 2:  
             if (time.time()-observe_window[1]) > watch_dog_patience:
-                raise RuntimeError("程序终止。")
+                raise RuntimeError("程序終止。")
     return response
 
 
@@ -303,13 +303,13 @@ def predict(inputs, llm_kwargs, plugin_kwargs, chatbot, history=[], system_promp
         history_feedin.append([history[2*i], history[2*i+1]] )
 
     # 开始接收chatglm的回复
-    response = f"[Local Message]: 等待{model_name}响应中 ..."
+    response = f"[Local Message]: 等待{model_name}響應中 ..."
     for response in _llm_handle.stream_chat(query=inputs, history=history_feedin, max_length=llm_kwargs['max_length'], top_p=llm_kwargs['top_p'], temperature=llm_kwargs['temperature']):
         chatbot[-1] = (inputs, response)
         yield from update_ui(chatbot=chatbot, history=history)
 
     # 总结输出
-    if response == f"[Local Message]: 等待{model_name}响应中 ...":
-        response = f"[Local Message]: {model_name}响应异常 ..."
+    if response == f"[Local Message]: 等待{model_name}響應中 ...":
+        response = f"[Local Message]: {model_name}響應異常 ..."
     history.extend([inputs, response])
     yield from update_ui(chatbot=chatbot, history=history)
