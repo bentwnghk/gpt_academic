@@ -244,7 +244,7 @@ def find_main_tex_file(file_manifest, mode):
             continue
 
     if len(canidates) == 0:
-        raise RuntimeError('无法找到一个主Tex文件（包含documentclass关键字）')
+        raise RuntimeError('無法找到一個主Tex文件（包含documentclass關鍵字）')
     elif len(canidates) == 1:
         return canidates[0]
     else: # if len(canidates) >= 2 通过一些Latex模板中常见（但通常不会出现在正文）的单词，对不同latex源文件扣分，取评分最高者返回
