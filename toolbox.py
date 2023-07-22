@@ -538,7 +538,11 @@ def load_chat_cookies():
     return {'api_key': API_KEY, 'llm_model': LLM_MODEL}
 
 def is_openai_api_key(key):
-    API_MATCH_ORIGINAL = re.match(r"sk-[a-zA-Z0-9]{48}$", key)
+    CUSTOM_API_KEY_PATTERN, = get_conf('CUSTOM_API_KEY_PATTERN')
+    if len(CUSTOM_API_KEY_PATTERN) != 0:
+        API_MATCH_ORIGINAL = re.match(CUSTOM_API_KEY_PATTERN, key)
+    else:
+        API_MATCH_ORIGINAL = re.match(r"sk-[a-zA-Z0-9]{48}$", key)
     return bool(API_MATCH_ORIGINAL)
 
 def is_azure_api_key(key):
@@ -594,7 +598,7 @@ def select_api_key(keys, llm_model):
             if is_azure_api_key(k): avail_key_list.append(k)
 
     if len(avail_key_list) == 0:
-        raise RuntimeError(f"您提供的api-key不滿足要求，不包含任何可用於{llm_model}的api-key。您可能選擇了錯誤的模型或請求源（右下角更換模型菜單中可切換openai,azure和api2d請求源）")
+        raise RuntimeError(f"您提供的api-key不滿足要求，不包含任何可用於{llm_model}的api-key。您可能選擇了錯誤的模型或請求源（右下角更換模型菜單中可切換openai,azure,claude,api2d等請求源）。")
 
     api_key = random.choice(avail_key_list) # 随机负载均衡
     return api_key
@@ -670,12 +674,12 @@ def read_single_conf_with_lru_cache(arg):
 
     # 在读取API_KEY时，检查一下是不是忘了改config
     if arg == 'API_KEY':
-        print亮蓝(f"[API_KEY] 本項目現已支持OpenAI和API2D的api-key，也支持同時填寫多個api-key，如：API_KEY=\"openai-key1,openai-key2,api2d-key3\"")
-        print亮蓝(f"[API_KEY] 您可以在config.py中修改api-key(s)，也可以在問題輸入區輸入臨時的api-key(s)，然後回車鍵提交後即可生效。")
+        print亮蓝(f"[API_KEY] 本項目現已支持OpenAI和Azure的api-key。也支持同時填寫多個api-key，如API_KEY=\"openai-key1,openai-key2,azure-key3\"")
+        print亮蓝(f"[API_KEY] 您既可以在config.py中修改api-key(s)，也可以在問題輸入區輸入臨時的api-key(s)，然後回車鍵提交後即可生效。")
         if is_any_api_key(r):
             print亮绿(f"[API_KEY] 您的 API_KEY 是: {r[:15]}*** API_KEY 導入成功")
         else:
-            print亮红( "[API_KEY] 正確的 API_KEY 是'sk'開頭的51位密鑰（OpenAI），或者 'fk'開頭的41位密鑰，請在config文件中修改API密鑰之後再運行。")
+            print亮红( "[API_KEY] 您的 API_KEY 不滿足任何一種已知的密鑰格式，請在config文件中修改API密鑰之後再運行。")
     if arg == 'proxies':
         if r is None:
             print亮红("[PROXY] 網絡代理狀態：未配置。無代理狀態下很可能無法訪問OpenAI家族的模型。建議：檢查USE_PROXY選項是否修改。")
@@ -685,6 +689,7 @@ def read_single_conf_with_lru_cache(arg):
     return r
 
 
+@lru_cache(maxsize=128)
 def get_conf(*args):
     # 建议您复制一个config_private.py放自己的秘密, 如API和代理网址, 避免不小心传github被别人看到
     res = []
