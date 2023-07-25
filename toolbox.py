@@ -681,6 +681,7 @@ def read_single_conf_with_lru_cache(arg):
         else:
             print亮红( "[API_KEY] 您的 API_KEY 不滿足任何一種已知的密鑰格式，請在config文件中修改API密鑰之後再運行。")
     if arg == 'proxies':
+        if not read_single_conf_with_lru_cache('USE_PROXY'): r = None   # 检查USE_PROXY，防止proxies单独起作用
         if r is None:
             print亮红("[PROXY] 網絡代理狀態：未配置。無代理狀態下很可能無法訪問OpenAI家族的模型。建議：檢查USE_PROXY選項是否修改。")
         else:
