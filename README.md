@@ -116,7 +116,7 @@ python -m pip install -r requirements.txt # 这个步骤和pip安装一样的步
 ```
 
 
-<details><summary>如果需要支持清华ChatGLM2/复旦MOSS作为后端，请点击展开此处</summary>
+<details><summary>如果需要支持清华ChatGLM2/复旦MOSS/RWKV作为后端，请点击展开此处</summary>
 <p>
 
 【可选步骤】如果需要支持清华ChatGLM2/复旦MOSS作为后端，需要额外安装更多依赖（前提条件：熟悉Python + 用过Pytorch + 电脑配置够强）：
@@ -128,7 +128,10 @@ python -m pip install -r request_llm/requirements_chatglm.txt
 python -m pip install -r request_llm/requirements_moss.txt
 git clone --depth=1 https://github.com/OpenLMLab/MOSS.git request_llm/moss  # 注意执行此行代码时，必须处于项目根路径
 
-# 【可选步骤III】确保config.py配置文件的AVAIL_LLM_MODELS包含了期望的模型，目前支持的全部模型如下(jittorllms系列目前仅支持docker方案)：
+# 【可选步骤III】支持RWKV Runner
+参考wiki：https://github.com/binary-husky/gpt_academic/wiki/%E9%80%82%E9%85%8DRWKV-Runner
+
+# 【可选步骤IV】确保config.py配置文件的AVAIL_LLM_MODELS包含了期望的模型，目前支持的全部模型如下(jittorllms系列目前仅支持docker方案)：
 AVAIL_LLM_MODELS = ["gpt-3.5-turbo", "api2d-gpt-3.5-turbo", "gpt-4", "api2d-gpt-4", "chatglm", "newbing", "moss"] # + ["jittorllms_rwkv", "jittorllms_pangualpha", "jittorllms_llama"]
 ```
 
@@ -147,6 +150,7 @@ python main.py
 1. 仅ChatGPT（推荐大多数人选择，等价于docker-compose方案1）
 [![basic](https://github.com/binary-husky/gpt_academic/actions/workflows/build-without-local-llms.yml/badge.svg?branch=master)](https://github.com/binary-husky/gpt_academic/actions/workflows/build-without-local-llms.yml)
 [![basiclatex](https://github.com/binary-husky/gpt_academic/actions/workflows/build-with-latex.yml/badge.svg?branch=master)](https://github.com/binary-husky/gpt_academic/actions/workflows/build-with-latex.yml)
+[![basicaudio](https://github.com/binary-husky/gpt_academic/actions/workflows/build-with-audio-assistant.yml/badge.svg?branch=master)](https://github.com/binary-husky/gpt_academic/actions/workflows/build-with-audio-assistant.yml)
 
 ``` sh
 git clone --depth=1 https://github.com/binary-husky/gpt_academic.git  # 下载项目
@@ -195,10 +199,12 @@ docker-compose up
 5. 远程云服务器部署（需要云服务器知识与经验）。
 请访问[部署wiki-1](https://github.com/binary-husky/gpt_academic/wiki/%E4%BA%91%E6%9C%8D%E5%8A%A1%E5%99%A8%E8%BF%9C%E7%A8%8B%E9%83%A8%E7%BD%B2%E6%8C%87%E5%8D%97)
 
-6. 使用WSL2（Windows Subsystem for Linux 子系统）。
+6. 使用Sealos[一键部署](https://github.com/binary-husky/gpt_academic/issues/993)。
+
+7. 使用WSL2（Windows Subsystem for Linux 子系统）。
 请访问[部署wiki-2](https://github.com/binary-husky/gpt_academic/wiki/%E4%BD%BF%E7%94%A8WSL2%EF%BC%88Windows-Subsystem-for-Linux-%E5%AD%90%E7%B3%BB%E7%BB%9F%EF%BC%89%E9%83%A8%E7%BD%B2)
 
-7. 如何在二级网址（如`http://localhost/subpath`）下运行。
+8. 如何在二级网址（如`http://localhost/subpath`）下运行。
 请访问[FastAPI运行说明](docs/WithFastapi.md)
 
 
