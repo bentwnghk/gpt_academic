@@ -55,7 +55,7 @@ def 图片生成(prompt, llm_kwargs, plugin_kwargs, chatbot, history, system_pro
     web_port        当前软件运行的端口号
     """
     history = []    # 清空历史，以免输入溢出
-    chatbot.append(("這是什麼功能？", "[Local Message] 生成圖像, 請先把模型切換至gpt-xxxx或者api2d-xxxx。如果中文效果不理想, 嘗試Prompt。正在處理中 ....."))
+    chatbot.append(("這是什麼功能？", "[Local Message] 生成圖像, 請先把模型切換至gpt-*或者api2d-*。如果中文效果不理想, 嘗試英文Prompt。正在處理中 ....."))
     yield from update_ui(chatbot=chatbot, history=history) # 刷新界面 # 由于请求gpt需要一段时间，我们先及时地做一次界面更新
     if ("advanced_arg" in plugin_kwargs) and (plugin_kwargs["advanced_arg"] == ""): plugin_kwargs.pop("advanced_arg")
     resolution = plugin_kwargs.get("advanced_arg", '256x256')
