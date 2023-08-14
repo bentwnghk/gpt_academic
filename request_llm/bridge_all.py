@@ -68,6 +68,10 @@ get_token_num_gpt35 = lambda txt: len(tokenizer_gpt35.encode(txt, disallowed_spe
 get_token_num_gpt4 = lambda txt: len(tokenizer_gpt4.encode(txt, disallowed_special=()))
 
 
+# 开始初始化模型
+AVAIL_LLM_MODELS, LLM_MODEL = get_conf("AVAIL_LLM_MODELS", "LLM_MODEL")
+AVAIL_LLM_MODELS = AVAIL_LLM_MODELS + [LLM_MODEL]
+# -=-=-=-=-=-=- 以下这部分是最早加入的最稳定的模型 -=-=-=-=-=-=-
 model_info = {
     # openai
     "gpt-3.5-turbo": {
@@ -164,9 +168,7 @@ model_info = {
 
 }
 
-
-AVAIL_LLM_MODELS, LLM_MODEL = get_conf("AVAIL_LLM_MODELS", "LLM_MODEL")
-AVAIL_LLM_MODELS = AVAIL_LLM_MODELS + [LLM_MODEL]
+# -=-=-=-=-=-=- 以下部分是新加入的模型，可能附带额外依赖 -=-=-=-=-=-=-
 if "claude-1-100k" in AVAIL_LLM_MODELS or "claude-2" in AVAIL_LLM_MODELS:
     from .bridge_claude import predict_no_ui_long_connection as claude_noui
     from .bridge_claude import predict as claude_ui
@@ -351,6 +353,40 @@ if "qwen" in AVAIL_LLM_MODELS:
         })
     except:
         print(trimmed_format_exc())
+if "chatgpt_website" in AVAIL_LLM_MODELS:   # 接入一些逆向工程https://github.com/acheong08/ChatGPT-to-API/
+    try:
+        from .bridge_chatgpt_website import predict_no_ui_long_connection as chatgpt_website_noui
+        from .bridge_chatgpt_website import predict as chatgpt_website_ui
+        model_info.update({
+            "chatgpt_website": {
+                "fn_with_ui": chatgpt_website_ui,
+                "fn_without_ui": chatgpt_website_noui,
+                "endpoint": None,
+                "max_token": 4096,
+                "tokenizer": tokenizer_gpt35,
+                "token_cnt": get_token_num_gpt35,
+            }
+        })
+    except:
+        print(trimmed_format_exc())
+if "spark" in AVAIL_LLM_MODELS:   # 讯飞星火认知大模型
+    try:
+        from .bridge_spark import predict_no_ui_long_connection as spark_noui
+        from .bridge_spark import predict as spark_ui
+        model_info.update({
+            "spark": {
+                "fn_with_ui": spark_ui,
+                "fn_without_ui": spark_noui,
+                "endpoint": None,
+                "max_token": 4096,
+                "tokenizer": tokenizer_gpt35,
+                "token_cnt": get_token_num_gpt35,
+            }
+        })
+    except:
+        print(trimmed_format_exc())
+
+
 
 def LLM_CATCH_EXCEPTION(f):
     """
@@ -391,7 +427,8 @@ def predict_no_ui_long_connection(inputs, llm_kwargs, history, sys_prompt, obser
         method = model_info[model]["fn_without_ui"]
         return method(inputs, llm_kwargs, history, sys_prompt, observe_window, console_slience)
     else:
-        # 如果同时询问多个大语言模型：
+
+        # 如果同时询问多个大语言模型，这个稍微啰嗦一点，但思路相同，您不必读这个else分支
         executor = ThreadPoolExecutor(max_workers=4)
         models = model.split('&')
         n_model = len(models)
