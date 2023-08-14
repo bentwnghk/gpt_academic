@@ -101,7 +101,7 @@ class SparkRequestInstance():
             data = json.loads(message)
             code = data['header']['code']
             if code != 0:
-                print(f'请求错误: {code}, {data}')
+                print(f'請求錯誤: {code}, {data}')
                 ws.close()
                 self.time_to_exit_event.set()
             else:

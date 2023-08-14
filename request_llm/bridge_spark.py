@@ -21,7 +21,7 @@ def predict_no_ui_long_connection(inputs, llm_kwargs, history=[], sys_prompt="",
         if len(observe_window) >= 1:
             observe_window[0] = response
         if len(observe_window) >= 2:
-            if (time.time()-observe_window[1]) > watch_dog_patience: raise RuntimeError("程序终止。")
+            if (time.time()-observe_window[1]) > watch_dog_patience: raise RuntimeError("程序終止。")
     return response
 
 def predict(inputs, llm_kwargs, plugin_kwargs, chatbot, history=[], system_prompt='', stream = True, additional_fn=None):
@@ -43,7 +43,7 @@ def predict(inputs, llm_kwargs, plugin_kwargs, chatbot, history=[], system_promp
         yield from update_ui(chatbot=chatbot, history=history)
 
     # 总结输出
-    if response == f"[Local Message]: 等待{model_name}响应中 ...":
-        response = f"[Local Message]: {model_name}响应异常 ..."
+    if response == f"[Local Message]: 等待{model_name}響應中 ...":
+        response = f"[Local Message]: {model_name}響應異常 ..."
     history.extend([inputs, response])
     yield from update_ui(chatbot=chatbot, history=history)
