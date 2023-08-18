@@ -30,7 +30,7 @@ def 猜你想问(txt, llm_kwargs, plugin_kwargs, chatbot, history, system_prompt
 
 @CatchException
 def 清除缓存(txt, llm_kwargs, plugin_kwargs, chatbot, history, system_prompt, web_port):
-    chatbot.append(['清除本地缓存数据', '执行中. 删除 gpt_log & private_upload'])
+    chatbot.append(['清除本地緩存數據', '執行中. 删除 gpt_log & private_upload'])
     yield from update_ui(chatbot=chatbot, history=history)  # 刷新界面
 
     import shutil, os
@@ -39,5 +39,5 @@ def 清除缓存(txt, llm_kwargs, plugin_kwargs, chatbot, history, system_prompt
     shutil.rmtree(gpt_log_dir, ignore_errors=True)
     shutil.rmtree(private_upload_dir, ignore_errors=True)
 
-    chatbot.append(['清除本地缓存数据', '执行完成'])
+    chatbot.append(['清除本地緩存數據', '執行完成'])
     yield from update_ui(chatbot=chatbot, history=history)  # 刷新界面
