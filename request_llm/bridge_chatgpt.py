@@ -214,9 +214,8 @@ def handle_error(inputs, llm_kwargs, chatbot, history, chunk_decoded, error_msg)
     if "reduce the length" in error_msg:
         if len(history) >= 2: history[-1] = ""; history[-2] = "" # 清除當前溢出的輸入：history[-2] 是本次輸入, history[-1] 是本次輸出
         history = clip_history(inputs=inputs, history=history, tokenizer=model_info[llm_kwargs['llm_model']]['tokenizer'], 
-                                               max_token_limit=(model_info[llm_kwargs['llm_model']]['max_token'])) # history至少釋放二分之一
+                                               max_token_limit=(model_info[llm_kwargs['llm_model']]['max_token'])) # history至少释放二分之一
         chatbot[-1] = (chatbot[-1][0], "[Local Message] Reduce the length. 本次輸入過長, 或歷史數據過長. 歷史緩存數據已部分釋放, 您可以請再次嘗試. (若再次失敗則更可能是因為輸入過長.)")
-                        # history = []    # 清除歷史
     elif "does not exist" in error_msg:
         chatbot[-1] = (chatbot[-1][0], f"[Local Message] Model {llm_kwargs['llm_model']} does not exist. 模型不存在, 或者您沒有獲得體驗資格.")
     elif "Incorrect API key" in error_msg:
