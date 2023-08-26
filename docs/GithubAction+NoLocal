@@ -11,8 +11,7 @@ WORKDIR /gpt
 COPY . .
 
 # 安装依赖
-RUN pip install --upgrade pip
-RUN pip install -r requirements.txt
+RUN pip3 install -r requirements.txt
 RUN pip3 install -r request_llm/requirements_slackclaude.txt
 RUN pip3 install -r request_llm/requirements_newbing.txt
 RUN pip3 install --upgrade moviepy
