@@ -63,6 +63,7 @@ def get_core_functions():
         "英譯中": {
             "Prefix":   r"翻譯成地道的中文：" + "\n\n",
             "Suffix":   r"",
+            "Visible": False,
         },
         "閱讀理解練習": {
             "Prefix":   r"I want you to act as a reading comprehension exercise generator. " +
@@ -87,6 +88,7 @@ def get_core_functions():
             "Prefix":   r"Here are some bibliography items, please transform them into bibtex style." +
                         r"Note that, reference styles maybe more than one kind, you should transform each item correctly." +
                         r"Items need to be transformed:",
+            "Visible": False,
             "Suffix":   r"",
         }
     }

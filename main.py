@@ -6,13 +6,12 @@ def main():
     from request_llm.bridge_all import predict
     from toolbox import format_io, find_free_port, on_file_uploaded, on_report_generated, get_conf, ArgsGeneralWrapper, load_chat_cookies, DummyWith
     # 建议您复制一个config_private.py放自己的秘密, 如API和代理网址, 避免不小心传github被别人看到
-    proxies, WEB_PORT, LLM_MODEL, CONCURRENT_COUNT, AUTHENTICATION, CHATBOT_HEIGHT, LAYOUT, AVAIL_LLM_MODELS, AUTO_CLEAR_TXT = \
-        get_conf('proxies', 'WEB_PORT', 'LLM_MODEL', 'CONCURRENT_COUNT', 'AUTHENTICATION', 'CHATBOT_HEIGHT', 'LAYOUT', 'AVAIL_LLM_MODELS', 'AUTO_CLEAR_TXT')
+    proxies, WEB_PORT, LLM_MODEL, CONCURRENT_COUNT, AUTHENTICATION = get_conf('proxies', 'WEB_PORT', 'LLM_MODEL', 'CONCURRENT_COUNT', 'AUTHENTICATION')
+    CHATBOT_HEIGHT, LAYOUT, AVAIL_LLM_MODELS, AUTO_CLEAR_TXT = get_conf('CHATBOT_HEIGHT', 'LAYOUT', 'AVAIL_LLM_MODELS', 'AUTO_CLEAR_TXT')
     ENABLE_AUDIO, AUTO_CLEAR_TXT = get_conf('ENABLE_AUDIO', 'AUTO_CLEAR_TXT')
+
     # 如果WEB_PORT是-1, 则随机选取WEB端口
     PORT = find_free_port() if WEB_PORT <= 0 else WEB_PORT
-    if not AUTHENTICATION: AUTHENTICATION = None
-
     from check_proxy import get_current_version
     from themes.theme import adjust_theme, advanced_css, theme_declaration
     initial_prompt = "Serve me as a writing and programming assistant."
@@ -34,7 +33,10 @@ def main():
 
     # 高级函数插件
     from crazy_functional import get_crazy_functions
-    crazy_fns = get_crazy_functions()
+    DEFAULT_FN_GROUPS, = get_conf('DEFAULT_FN_GROUPS')
+    plugins = get_crazy_functions()
+    all_plugin_groups = list(set([g for _, plugin in plugins.items() for g in plugin['Group'].split('|')]))
+    match_group = lambda tags, groups: any([g in groups for g in tags.split('|')])
 
     # 处理markdown文本格式的转变
     gr.Chatbot.postprocess = format_io
@@ -83,25 +85,33 @@ def main():
                             if ("Visible" in functional[k]) and (not functional[k]["Visible"]): continue
                             variant = functional[k]["Color"] if "Color" in functional[k] else "secondary"
                             functional[k]["Button"] = gr.Button(k, variant=variant)
+                            functional[k]["Button"].style(size="sm")
                 with gr.Accordion("函數插件區", open=True, elem_id="plugin-panel") as area_crazy_fn:
                     with gr.Row():
                         gr.Markdown("插件可讀取“輸入區”文本/路徑作為參數（上傳文件自動修正路徑）")
+                    with gr.Row(elem_id="input-plugin-group"):
+                        plugin_group_sel = gr.Dropdown(choices=all_plugin_groups, label='', show_label=False, value=DEFAULT_FN_GROUPS, 
+                                                      multiselect=True, interactive=True, elem_classes='normal_mut_select').style(container=False)
                     with gr.Row():
-                        for k in crazy_fns:
-                            if not crazy_fns[k].get("AsButton", True): continue
-                            variant = crazy_fns[k]["Color"] if "Color" in crazy_fns[k] else "secondary"
-                            crazy_fns[k]["Button"] = gr.Button(k, variant=variant)
-                            crazy_fns[k]["Button"].style(size="sm")
+                        for k, plugin in plugins.items():
+                            if not plugin.get("AsButton", True): continue
+                            visible = True if match_group(plugin['Group'], DEFAULT_FN_GROUPS) else False
+                            variant = plugins[k]["Color"] if "Color" in plugin else "secondary"
+                            plugin['Button'] = plugins[k]['Button'] = gr.Button(k, variant=variant, visible=visible).style(size="sm")
                     with gr.Row():
                         with gr.Accordion("更多函數插件", open=True):
-                            dropdown_fn_list = [k for k in crazy_fns.keys() if not crazy_fns[k].get("AsButton", True)]
+                            dropdown_fn_list = []
+                            for k, plugin in plugins.items():
+                                if not match_group(plugin['Group'], DEFAULT_FN_GROUPS): continue
+                                if not plugin.get("AsButton", True): dropdown_fn_list.append(k)     # 排除已经是按钮的插件
+                                elif plugin.get('AdvancedArgs', False): dropdown_fn_list.append(k)  # 对于需要高级参数的插件，亦在下拉菜单中显示
                             with gr.Row():
                                 dropdown = gr.Dropdown(dropdown_fn_list, value=r"打開插件列表", label="", show_label=False).style(container=False)
                             with gr.Row():
                                 plugin_advanced_arg = gr.Textbox(show_label=True, label="高級參數輸入區", visible=False, 
                                                                  placeholder="這裡是特殊函數插件的高級參數輸入區").style(container=False)
                             with gr.Row():
-                                switchy_bt = gr.Button(r"請先從插件列表中選擇", variant="secondary")
+                                switchy_bt = gr.Button(r"請先從插件列表中選擇", variant="secondary").style(size="sm")
                     with gr.Row():
                         with gr.Accordion("點擊展開“文件上傳區”。上傳本地文件/壓縮包供函數插件調用。", open=False) as area_file_up:
                             file_upload = gr.Files(label="任何文件，但推薦上傳壓縮文件(zip, tar)", file_count="multiple")
@@ -112,7 +122,6 @@ def main():
                     max_length_sl = gr.Slider(minimum=256, maximum=8192, value=4096, step=1, interactive=True, label="Local LLM MaxLength",)
                     checkboxes = gr.CheckboxGroup(["基礎功能區", "函數插件區", "底部輸入區", "輸入清除鍵", "插件參數區"], value=["基礎功能區", "函數插件區"], label="顯示/隱藏功能區")
                     md_dropdown = gr.Dropdown(AVAIL_LLM_MODELS, value=LLM_MODEL, label="更換AI/LLM模型").style(container=False)
-
                     gr.Markdown(description)
                 with gr.Accordion("備選輸入區", open=True, visible=False, elem_id="input-panel2") as area_input_secondary:
                     with gr.Row():
@@ -123,6 +132,7 @@ def main():
                         resetBtn2 = gr.Button("重置", variant="secondary"); resetBtn2.style(size="sm")
                         stopBtn2 = gr.Button("停止", variant="secondary"); stopBtn2.style(size="sm")
                         clearBtn2 = gr.Button("清除", variant="secondary", visible=False); clearBtn2.style(size="sm")
+
         # 功能区显示开关与功能区的互动
         def fn_area_visibility(a):
             ret = {}
@@ -160,19 +170,19 @@ def main():
             click_handle = functional[k]["Button"].click(fn=ArgsGeneralWrapper(predict), inputs=[*input_combo, gr.State(True), gr.State(k)], outputs=output_combo)
             cancel_handles.append(click_handle)
         # 文件上传区，接收文件后与chatbot的互动
-        file_upload.upload(on_file_uploaded, [file_upload, chatbot, txt, txt2, checkboxes], [chatbot, txt, txt2])
+        file_upload.upload(on_file_uploaded, [file_upload, chatbot, txt, txt2, checkboxes, cookies], [chatbot, txt, txt2, cookies])
         # 函数插件-固定按钮区
-        for k in crazy_fns:
-            if not crazy_fns[k].get("AsButton", True): continue
-            click_handle = crazy_fns[k]["Button"].click(ArgsGeneralWrapper(crazy_fns[k]["Function"]), [*input_combo, gr.State(PORT)], output_combo)
+        for k in plugins:
+            if not plugins[k].get("AsButton", True): continue
+            click_handle = plugins[k]["Button"].click(ArgsGeneralWrapper(plugins[k]["Function"]), [*input_combo, gr.State(PORT)], output_combo)
             click_handle.then(on_report_generated, [cookies, file_upload, chatbot], [cookies, file_upload, chatbot])
             cancel_handles.append(click_handle)
         # 函数插件-下拉菜单与随变按钮的互动
         def on_dropdown_changed(k):
-            variant = crazy_fns[k]["Color"] if "Color" in crazy_fns[k] else "secondary"
+            variant = plugins[k]["Color"] if "Color" in plugins[k] else "secondary"
             ret = {switchy_bt: gr.update(value=k, variant=variant)}
-            if crazy_fns[k].get("AdvancedArgs", False): # 是否唤起高级插件参数区
-                ret.update({plugin_advanced_arg: gr.update(visible=True,  label=f"插件[{k}]的高級參數說明：" + crazy_fns[k].get("ArgsReminder", [f"沒有提供高級參數功能說明"]))})
+            if plugins[k].get("AdvancedArgs", False): # 是否唤起高级插件参数区
+                ret.update({plugin_advanced_arg: gr.update(visible=True,  label=f"插件[{k}]的高級參數說明：" + plugins[k].get("ArgsReminder", [f"沒有提供高級參數功能說明"]))})
             else:
                 ret.update({plugin_advanced_arg: gr.update(visible=False, label=f"插件[{k}]不需要高級參數。")})
             return ret
@@ -183,13 +193,26 @@ def main():
         # 随变按钮的回调函数注册
         def route(request: gr.Request, k, *args, **kwargs):
             if k in [r"打開插件列表", r"請先從插件列表中選擇"]: return
-            yield from ArgsGeneralWrapper(crazy_fns[k]["Function"])(request, *args, **kwargs)
+            yield from ArgsGeneralWrapper(plugins[k]["Function"])(request, *args, **kwargs)
         click_handle = switchy_bt.click(route,[switchy_bt, *input_combo, gr.State(PORT)], output_combo)
         click_handle.then(on_report_generated, [cookies, file_upload, chatbot], [cookies, file_upload, chatbot])
         cancel_handles.append(click_handle)
         # 终止按钮的回调函数注册
         stopBtn.click(fn=None, inputs=None, outputs=None, cancels=cancel_handles)
         stopBtn2.click(fn=None, inputs=None, outputs=None, cancels=cancel_handles)
+        plugins_as_btn = {name:plugin for name, plugin in plugins.items() if plugin.get('Button', None)}
+        def on_group_change(group_list):
+            btn_list = []
+            fns_list = []
+            if not group_list: # 处理特殊情况：没有选择任何插件组
+                return [*[plugin['Button'].update(visible=False) for _, plugin in plugins_as_btn.items()], gr.Dropdown.update(choices=[])]
+            for k, plugin in plugins.items():
+                if plugin.get("AsButton", True): 
+                    btn_list.append(plugin['Button'].update(visible=match_group(plugin['Group'], group_list))) # 刷新按钮
+                    if plugin.get('AdvancedArgs', False): dropdown_fn_list.append(k) # 对于需要高级参数的插件，亦在下拉菜单中显示
+                elif match_group(plugin['Group'], group_list): fns_list.append(k) # 刷新下拉列表
+            return [*btn_list, gr.Dropdown.update(choices=fns_list)]
+        plugin_group_sel.select(fn=on_group_change, inputs=[plugin_group_sel], outputs=[*[plugin['Button'] for name, plugin in plugins_as_btn.items()], dropdown])
         if ENABLE_AUDIO: 
             from crazy_functions.live_audio.audio_io import RealtimeAudioDistribution
             rad = RealtimeAudioDistribution()
@@ -221,8 +244,10 @@ def main():
 
     auto_opentab_delay()
     demo.queue(concurrency_count=CONCURRENT_COUNT).launch(
-        server_name="0.0.0.0", server_port=PORT,
-        favicon_path="docs/logo.png", auth=AUTHENTICATION,
+        server_name="0.0.0.0", 
+        server_port=PORT,
+        favicon_path="docs/logo.png", 
+        auth=AUTHENTICATION if len(AUTHENTICATION) != 0 else None,
         blocked_paths=["config.py","config_private.py","docker-compose.yml","Dockerfile"])
 
     # 如果需要在二级路径下运行

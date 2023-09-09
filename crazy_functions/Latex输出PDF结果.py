@@ -6,7 +6,7 @@ pj = os.path.join
 ARXIV_CACHE_DIR = os.path.expanduser(f"~/arxiv_cache/")
 
 # =================================== 工具函数 ===============================================
-专业词汇声明  = 'If the term "agent" is used in this section, it should be translated to "智能體". '
+# 专业词汇声明  = 'If the term "agent" is used in this section, it should be translated to "智能體". '
 def switch_prompt(pfg, mode, more_requirement):
     """
     Generate prompts and system prompts based on the mode for proofreading or translating.
@@ -109,7 +109,7 @@ def arxiv_download(chatbot, history, txt):
 
     url_ = txt   # https://arxiv.org/abs/1707.06690
     if not txt.startswith('https://arxiv.org/abs/'): 
-        msg = f"解析arxiv網址失敗, 期望格式例如: https://arxiv.org/abs/1707.06690。實際得到格式: {url_}"
+        msg = f"解析arxiv網址失敗, 期望格式例如: https://arxiv.org/abs/1707.06690。實際得到格式: {url_}。"
         yield from update_ui_lastest_msg(msg, chatbot=chatbot, history=history) # 刷新界面
         return msg, None
     # <-------------- set format ------------->
@@ -291,7 +291,7 @@ def Latex翻译中文并重新编译PDF(txt, llm_kwargs, plugin_kwargs, chatbot,
         yield from update_ui(chatbot=chatbot, history=history); time.sleep(1) # 刷新界面
         promote_file_to_downloadzone(file=zip_res, chatbot=chatbot)
     else:
-        chatbot.append((f"失敗了", '雖然PDF生成失敗了, 但請查收結果（壓縮包）, 內含已經翻譯的Tex文檔, 也是可讀的, 您可以到Github Issue區, 用該壓縮包+對話歷史存檔進行反饋 ...'))
+        chatbot.append((f"失敗了", '雖然PDF生成失敗了, 但請查收結果（壓縮包）, 內含已經翻譯的Tex文檔, 您可以到Github Issue區, 用該壓縮包進行反饋。如係統是Linux，請檢查系統字體（見Github wiki） ...'))
         yield from update_ui(chatbot=chatbot, history=history); time.sleep(1) # 刷新界面
         promote_file_to_downloadzone(file=zip_res, chatbot=chatbot)
 
