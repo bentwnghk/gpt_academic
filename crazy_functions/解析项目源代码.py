@@ -1,12 +1,13 @@
-from toolbox import update_ui
-from toolbox import CatchException, report_execption, write_results_to_file
+from toolbox import update_ui, promote_file_to_downloadzone, disable_auto_promotion
+from toolbox import CatchException, report_execption, write_history_to_file
 from .crazy_utils import input_clipping
 
 def 解析源代码新(file_manifest, project_folder, llm_kwargs, plugin_kwargs, chatbot, history, system_prompt):
     import os, copy
     from .crazy_utils import request_gpt_model_multi_threads_with_very_awesome_ui_and_high_efficiency
     from .crazy_utils import request_gpt_model_in_new_thread_with_ui_alive
-    msg = '正常'
+    disable_auto_promotion(chatbot=chatbot)
+
     summary_batch_isolation = True
     inputs_array = []
     inputs_show_user_array = []
@@ -43,8 +44,9 @@ def 解析源代码新(file_manifest, project_folder, llm_kwargs, plugin_kwargs,
     # 全部文件解析完成，结果写入文件，准备对工程源代码进行汇总分析
     report_part_1 = copy.deepcopy(gpt_response_collection)
     history_to_return = report_part_1
-    res = write_results_to_file(report_part_1)
-    chatbot.append(("完成？ ", "逐個文件分析已完成。 " + res + "\n\n正在開始匯總。"))
+    res = write_history_to_file(report_part_1)
+    promote_file_to_downloadzone(res, chatbot=chatbot)
+    chatbot.append(("完成？", "逐個文件分析已完成。" + res + "\n\n正在開始匯總。"))
     yield from update_ui(chatbot=chatbot, history=history_to_return) # 刷新界面
 
     ############################## <第二步，综合，单线程，分组+迭代处理> ##################################
@@ -97,7 +99,8 @@ def 解析源代码新(file_manifest, project_folder, llm_kwargs, plugin_kwargs,
 
     ############################## <END> ##################################
     history_to_return.extend(report_part_2)
-    res = write_results_to_file(history_to_return)
+    res = write_history_to_file(history_to_return)
+    promote_file_to_downloadzone(res, chatbot=chatbot)
     chatbot.append(("完成了嗎？", res))
     yield from update_ui(chatbot=chatbot, history=history_to_return) # 刷新界面
 

@@ -400,12 +400,12 @@ def get_crazy_functions():
     try:
         from crazy_functions.Langchain知识库 import 知识库问答
         function_plugins.update({
-            "构建知识库（请先上传文件素材）": {
+            "构建知识库（先上传文件素材,再运行此插件）": {
                 "Group": "对话",
                 "Color": "stop",
                 "AsButton": False,
                 "AdvancedArgs": True,
-                "ArgsReminder": "待注入的知識庫名稱id, 默認為default",
+                "ArgsReminder": "此處待注入的知識庫名稱id, 默認為default。文件進入知識庫後可長期保存。可以通過再次調用本插件的方式，向知識庫追加更多文檔。",
                 "Function": HotReload(知识库问答)
             }
         })
@@ -415,12 +415,12 @@ def get_crazy_functions():
     try:
         from crazy_functions.Langchain知识库 import 读取知识库作答
         function_plugins.update({
-            "知识库问答": {
+            "知识库问答（构建知识库后,再运行此插件）": {
                 "Group": "对话",
                 "Color": "stop",
                 "AsButton": False,
                 "AdvancedArgs": True,
-                "ArgsReminder": "待提取的知識庫名稱id, 默認為default, 您需要首先調用構建知識庫",
+                "ArgsReminder": "待提取的知識庫名稱id, 默認為default, 您需要構建知識庫後再運行此插件。",
                 "Function": HotReload(读取知识库作答)
             }
         })

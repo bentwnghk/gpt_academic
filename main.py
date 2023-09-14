@@ -122,6 +122,15 @@ def main():
                     max_length_sl = gr.Slider(minimum=256, maximum=8192, value=4096, step=1, interactive=True, label="Local LLM MaxLength",)
                     checkboxes = gr.CheckboxGroup(["基礎功能區", "函數插件區", "底部輸入區", "輸入清除鍵", "插件參數區"], value=["基礎功能區", "函數插件區"], label="顯示/隱藏功能區")
                     md_dropdown = gr.Dropdown(AVAIL_LLM_MODELS, value=LLM_MODEL, label="更換AI/LLM模型").style(container=False)
+                    dark_mode_btn = gr.Button("Toggle Dark Mode ☀", variant="secondary").style(size="sm")
+                    dark_mode_btn.click(None, None, None, _js="""() => {
+                            if (document.querySelectorAll('.dark').length) {
+                                document.querySelectorAll('.dark').forEach(el => el.classList.remove('dark'));
+                            } else {
+                                document.querySelector('body').classList.add('dark');
+                            }
+                        }""",
+                    )
                     gr.Markdown(description)
                 with gr.Accordion("備選輸入區", open=True, visible=False, elem_id="input-panel2") as area_input_secondary:
                     with gr.Row():

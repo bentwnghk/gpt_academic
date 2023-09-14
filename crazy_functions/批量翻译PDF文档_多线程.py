@@ -63,6 +63,7 @@ def 解析PDF_基于GROBID(file_manifest, project_folder, llm_kwargs, plugin_kwa
     generated_conclusion_files = []
     generated_html_files = []
     DST_LANG = "中文"
+    from crazy_functions.crazy_utils import construct_html
     for index, fp in enumerate(file_manifest):
         chatbot.append(["當前進度：", f"正在連接GROBID服務，請稍候: {grobid_url}\n如果等待時間過長，請修改config中的GROBID_URL，可修改成本地GROBID服務。"]); yield from update_ui(chatbot=chatbot, history=history) # 刷新界面
         article_dict = parse_pdf(fp, grobid_url)
@@ -166,6 +167,7 @@ def 解析PDF(file_manifest, project_folder, llm_kwargs, plugin_kwargs, chatbot,
     TOKEN_LIMIT_PER_FRAGMENT = 1280
     generated_conclusion_files = []
     generated_html_files = []
+    from crazy_functions.crazy_utils import construct_html
     for index, fp in enumerate(file_manifest):
         # 读取PDF文件
         file_content, page_one = read_and_clean_pdf_text(fp)
@@ -259,51 +261,3 @@ def 解析PDF(file_manifest, project_folder, llm_kwargs, plugin_kwargs, chatbot,
         promote_file_to_downloadzone(html_path, rename_file=rename_file, chatbot=chatbot)
     chatbot.append(("給出輸出文件清單", str(generated_conclusion_files + generated_html_files)))
     yield from update_ui(chatbot=chatbot, history=history) # 刷新界面
-
-
-class construct_html():
-    def __init__(self) -> None:
-        self.css = """
-.row {
-  display: flex;
-  flex-wrap: wrap;
-}
-
-.column {
-  flex: 1;
-  padding: 10px;
-}
-
-.table-header {
-  font-weight: bold;
-  border-bottom: 1px solid black;
-}
-
-.table-row {
-  border-bottom: 1px solid lightgray;
-}
-
-.table-cell {
-  padding: 5px;
-}
-        """
-        self.html_string = f'<!DOCTYPE html><head><meta charset="utf-8"><title>翻譯結果</title><style>{self.css}</style></head>'
-
-
-    def add_row(self, a, b):
-        tmp = """
-<div class="row table-row">
-    <div class="column table-cell">REPLACE_A</div>
-    <div class="column table-cell">REPLACE_B</div>
-</div>
-        """
-        from toolbox import markdown_convertion
-        tmp = tmp.replace('REPLACE_A', markdown_convertion(a))
-        tmp = tmp.replace('REPLACE_B', markdown_convertion(b))
-        self.html_string += tmp
-
-
-    def save_file(self, file_name):
-        with open(os.path.join(get_log_folder(), file_name), 'w', encoding='utf8') as f:
-            f.write(self.html_string.encode('utf-8', 'ignore').decode())
-        return os.path.join(get_log_folder(), file_name)
