@@ -8,12 +8,13 @@ def main():
     # 建议您复制一个config_private.py放自己的秘密, 如API和代理网址, 避免不小心传github被别人看到
     proxies, WEB_PORT, LLM_MODEL, CONCURRENT_COUNT, AUTHENTICATION = get_conf('proxies', 'WEB_PORT', 'LLM_MODEL', 'CONCURRENT_COUNT', 'AUTHENTICATION')
     CHATBOT_HEIGHT, LAYOUT, AVAIL_LLM_MODELS, AUTO_CLEAR_TXT = get_conf('CHATBOT_HEIGHT', 'LAYOUT', 'AVAIL_LLM_MODELS', 'AUTO_CLEAR_TXT')
-    ENABLE_AUDIO, AUTO_CLEAR_TXT, PATH_LOGGING = get_conf('ENABLE_AUDIO', 'AUTO_CLEAR_TXT', 'PATH_LOGGING')
+    ENABLE_AUDIO, AUTO_CLEAR_TXT, PATH_LOGGING, AVAIL_THEMES, THEME = get_conf('ENABLE_AUDIO', 'AUTO_CLEAR_TXT', 'PATH_LOGGING', 'AVAIL_THEMES', 'THEME')
 
     # 如果WEB_PORT是-1, 则随机选取WEB端口
     PORT = find_free_port() if WEB_PORT <= 0 else WEB_PORT
     from check_proxy import get_current_version
-    from themes.theme import adjust_theme, advanced_css, theme_declaration
+    from themes.theme import adjust_theme, advanced_css, theme_declaration, load_dynamic_theme
+
     initial_prompt = "Serve me as a writing and programming assistant."
     title_html = f"<h1 align=\"center\">Mr.🆖 GPT 學術優化 {get_current_version()}</h1>{theme_declaration}"
     description =  ""
@@ -58,6 +59,7 @@ def main():
     cancel_handles = []
     with gr.Blocks(title="Mr.🆖 GPT 學術優化", theme=set_theme, analytics_enabled=False, css=advanced_css) as demo:
         gr.HTML(title_html)
+        secret_css, secret_font = gr.Textbox(visible=False), gr.Textbox(visible=False)
         cookies = gr.State(load_chat_cookies())
         with gr_L1():
             with gr_L2(scale=2, elem_id="gpt-chat"):
@@ -122,7 +124,8 @@ def main():
                     max_length_sl = gr.Slider(minimum=256, maximum=8192, value=4096, step=1, interactive=True, label="Local LLM MaxLength",)
                     checkboxes = gr.CheckboxGroup(["基礎功能區", "函數插件區", "底部輸入區", "輸入清除鍵", "插件參數區"], value=["基礎功能區", "函數插件區"], label="顯示/隱藏功能區")
                     md_dropdown = gr.Dropdown(AVAIL_LLM_MODELS, value=LLM_MODEL, label="更換AI/LLM模型").style(container=False)
-                    dark_mode_btn = gr.Button("Toggle Dark Mode ☀", variant="secondary").style(size="sm")
+                    theme_dropdown = gr.Dropdown(AVAIL_THEMES, value=THEME, label="更換UI主題").style(container=False)
+                    dark_mode_btn = gr.Button("切換介面明暗 ☀", variant="secondary").style(size="sm")
                     dark_mode_btn.click(None, None, None, _js="""() => {
                             if (document.querySelectorAll('.dark').length) {
                                 document.querySelectorAll('.dark').forEach(el => el.classList.remove('dark'));
@@ -196,9 +199,37 @@ def main():
                 ret.update({plugin_advanced_arg: gr.update(visible=False, label=f"插件[{k}]不需要高級參數。")})
             return ret
         dropdown.select(on_dropdown_changed, [dropdown], [switchy_bt, plugin_advanced_arg] )
+
         def on_md_dropdown_changed(k):
             return {chatbot: gr.update(label="當前模型："+k)}
         md_dropdown.select(on_md_dropdown_changed, [md_dropdown], [chatbot] )
+
+        def on_theme_dropdown_changed(theme, secret_css):
+            adjust_theme, css_part1, _, adjust_dynamic_theme = load_dynamic_theme(theme)
+            if adjust_dynamic_theme:
+                css_part2 = adjust_dynamic_theme._get_theme_css()
+            else:
+                css_part2 = adjust_theme()._get_theme_css()
+            return css_part2 + css_part1
+        
+        theme_handle = theme_dropdown.select(on_theme_dropdown_changed, [theme_dropdown, secret_css], [secret_css])
+        theme_handle.then(
+            None,
+            [secret_css],
+            None,
+            _js="""(css) => {
+                var existingStyles = document.querySelectorAll("style[data-loaded-css]");
+                for (var i = 0; i < existingStyles.length; i++) {
+                    var style = existingStyles[i];
+                    style.parentNode.removeChild(style);
+                }
+                var styleElement = document.createElement('style');
+                styleElement.setAttribute('data-loaded-css', css);
+                styleElement.innerHTML = css;
+                document.head.appendChild(styleElement);
+            }
+            """
+        )
         # 随变按钮的回调函数注册
         def route(request: gr.Request, k, *args, **kwargs):
             if k in [r"打開插件列表", r"請先從插件列表中選擇"]: return
