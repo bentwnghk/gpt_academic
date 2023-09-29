@@ -39,7 +39,7 @@ def get_crazy_functions():
 
     function_plugins = {
         "虚空终端": {
-            "Group": "对话|编程|学术",
+            "Group": "对话|编程|学术|智能体",
             "Color": "stop",
             "AsButton": True,
             "Function": HotReload(虚空终端)
@@ -251,20 +251,23 @@ def get_crazy_functions():
             "Info": "对中文Latex项目全文进行润色处理 | 输入参数为路径或上传压缩包",
             "Function": HotReload(Latex中文润色)
         },
-        "Latex项目全文中译英（输入路径或上传压缩包）": {
-            "Group": "学术",
-            "Color": "stop",
-            "AsButton": False,  # 加入下拉菜单中
-            "Info": "对Latex项目全文进行中译英处理 | 输入参数为路径或上传压缩包",
-            "Function": HotReload(Latex中译英)
-        },
-        "Latex项目全文英译中（输入路径或上传压缩包）": {
-            "Group": "学术",
-            "Color": "stop",
-            "AsButton": False,  # 加入下拉菜单中
-            "Info": "对Latex项目全文进行英译中处理 | 输入参数为路径或上传压缩包",
-            "Function": HotReload(Latex英译中)
-        },
+
+        # 被新插件取代
+        # "Latex项目全文中译英（输入路径或上传压缩包）": {
+        #     "Group": "学术",
+        #     "Color": "stop",
+        #     "AsButton": False,  # 加入下拉菜单中
+        #     "Info": "对Latex项目全文进行中译英处理 | 输入参数为路径或上传压缩包",
+        #     "Function": HotReload(Latex中译英)
+        # },
+        # "Latex项目全文英译中（输入路径或上传压缩包）": {
+        #     "Group": "学术",
+        #     "Color": "stop",
+        #     "AsButton": False,  # 加入下拉菜单中
+        #     "Info": "对Latex项目全文进行英译中处理 | 输入参数为路径或上传压缩包",
+        #     "Function": HotReload(Latex英译中)
+        # },
+        
         "批量Markdown中译英（输入路径或上传压缩包）": {
             "Group": "编程",
             "Color": "stop",
@@ -521,6 +524,18 @@ def get_crazy_functions():
     except:
         print('Load function plugin failed')
 
+    try:
+        from crazy_functions.函数动态生成 import 函数动态生成
+        function_plugins.update({
+            "动态代码解释器（CodeInterpreter）": {
+                "Group": "智能体",
+                "Color": "stop",
+                "AsButton": False,
+                "Function": HotReload(函数动态生成)
+            }
+        })
+    except:
+        print('Load function plugin failed')
 
     # try:
     #     from crazy_functions.CodeInterpreter import 虚空终端CodeInterpreter

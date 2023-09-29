@@ -155,11 +155,13 @@ def auto_update(raise_error=False):
 
 def warm_up_modules():
     print('正在執行一些模塊的預熱...')
+    from toolbox import ProxyNetworkActivate
     from request_llm.bridge_all import model_info
-    enc = model_info["gpt-3.5-turbo"]['tokenizer']
-    enc.encode("模塊預熱", disallowed_special=())
-    enc = model_info["gpt-4"]['tokenizer']
-    enc.encode("模塊預熱", disallowed_special=())
+    with ProxyNetworkActivate("Warmup_Modules"):
+        enc = model_info["gpt-3.5-turbo"]['tokenizer']
+        enc.encode("模塊預熱", disallowed_special=())
+        enc = model_info["gpt-4"]['tokenizer']
+        enc.encode("模塊預熱", disallowed_special=())
 
 if __name__ == '__main__':
     import os
