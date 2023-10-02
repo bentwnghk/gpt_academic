@@ -471,8 +471,8 @@ def extract_archive(file_path, dest_dir):
                 rf.extractall(path=dest_dir)
                 print("Successfully extracted rar archive to {}".format(dest_dir))
         except:
-            print("rar format requires additional dependencies to install")
-            return '\n\n解壓失敗! 需要安裝pip install rarfile來解壓rar文件'
+            print("Rar format requires additional dependencies to install")
+            return '\n\n解壓縮失敗!需要安裝pip install rarfile來解壓縮rar文件。 建議：使用zip壓縮格式。'
 
     # 第三方库，需要预先pip install py7zr
     elif file_extension == '.7z':
