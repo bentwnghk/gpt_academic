@@ -3,7 +3,7 @@ import os; os.environ['no_proxy'] = '*' # 避免代理网络产生意外污染
 def main():
     import gradio as gr
     if gr.__version__ not in ['3.32.6']: 
-        raise ModuleNotFoundError("使用项目内置Gradio获取最优体验! 请运行 `pip install -r requirements.txt` 指令安装内置Gradio及其他依赖, 详情信息见requirements.txt.")
+        raise ModuleNotFoundError("使用專案內建Gradio取得最佳體驗! 請執行 `pip install -r requirements.txt` 指令安裝內建Gradio及其他依賴, 詳情請見requirements.txt.")
     from request_llm.bridge_all import predict
     from toolbox import format_io, find_free_port, on_file_uploaded, on_report_generated, get_conf, ArgsGeneralWrapper, load_chat_cookies, DummyWith
     # 建议您复制一个config_private.py放自己的秘密, 如API和代理网址, 避免不小心传github被别人看到
@@ -88,7 +88,7 @@ def main():
                         for k in functional:
                             if ("Visible" in functional[k]) and (not functional[k]["Visible"]): continue
                             variant = functional[k]["Color"] if "Color" in functional[k] else "secondary"
-                            functional[k]["Button"] = gr.Button(k, variant=variant, info_str=f'基础功能区: {k}')
+                            functional[k]["Button"] = gr.Button(k, variant=variant, info_str=f'基礎功能區: {k}')
                             functional[k]["Button"].style(size="sm")
                 with gr.Accordion("函數插件區", open=True, elem_id="plugin-panel") as area_crazy_fn:
                     with gr.Row():
@@ -103,7 +103,7 @@ def main():
                             variant = plugins[k]["Color"] if "Color" in plugin else "secondary"
                             info = plugins[k].get("Info", k)
                             plugin['Button'] = plugins[k]['Button'] = gr.Button(k, variant=variant, 
-                                visible=visible, info_str=f'函数插件区: {info}').style(size="sm")
+                                visible=visible, info_str=f'函數插件區: {info}').style(size="sm")
                     with gr.Row():
                         with gr.Accordion("更多函數插件", open=True):
                             dropdown_fn_list = []
@@ -138,8 +138,8 @@ def main():
 
                 with gr.Tab("介面外觀", elem_id="interact-panel"):
                     theme_dropdown = gr.Dropdown(AVAIL_THEMES, value=THEME, label="更換UI主題").style(container=False)
-                    checkboxes = gr.CheckboxGroup(["基礎功能區", "函數外掛區", "浮動輸入區", "輸入清除鍵", "外掛參數區"], 
-                                                  value=["基礎功能區", "函數外掛區"], label="顯示/隱藏功能區", elem_id='cbs').style(container=False)
+                    checkboxes = gr.CheckboxGroup(["基礎功能區", "函數插件區", "浮動輸入區", "輸入清除鍵", "插件參數區"], 
+                                                  value=["基礎功能區", "函數插件區"], label="顯示/隱藏功能區", elem_id='cbs').style(container=False)
                     dark_mode_btn = gr.Button("切換介面明暗 ☀", variant="secondary").style(size="sm")
                     dark_mode_btn.click(None, None, None, _js="""() => {
                             if (document.querySelectorAll('.dark').length) {
@@ -149,7 +149,7 @@ def main():
                             }
                         }""",
                     )
-                with gr.Tab("帮助", elem_id="interact-panel"):
+                with gr.Tab("幫助", elem_id="interact-panel"):
                     gr.Markdown(description)
 
         with gr.Floating(init_x="20%", init_y="50%", visible=False, width="40%", drag="top") as area_input_secondary:
