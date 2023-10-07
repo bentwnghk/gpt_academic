@@ -2,13 +2,15 @@ import os; os.environ['no_proxy'] = '*' # 避免代理网络产生意外污染
 
 def main():
     import gradio as gr
-    if gr.__version__ not in ['3.28.3','3.32.2']: assert False, "需要特殊依賴，請務必用 pip install -r requirements.txt 指令安裝依賴，詳情信息見requirements.txt"
+    if gr.__version__ not in ['3.32.6']: 
+        raise ModuleNotFoundError("使用项目内置Gradio获取最优体验! 请运行 `pip install -r requirements.txt` 指令安装内置Gradio及其他依赖, 详情信息见requirements.txt.")
     from request_llm.bridge_all import predict
     from toolbox import format_io, find_free_port, on_file_uploaded, on_report_generated, get_conf, ArgsGeneralWrapper, load_chat_cookies, DummyWith
     # 建议您复制一个config_private.py放自己的秘密, 如API和代理网址, 避免不小心传github被别人看到
     proxies, WEB_PORT, LLM_MODEL, CONCURRENT_COUNT, AUTHENTICATION = get_conf('proxies', 'WEB_PORT', 'LLM_MODEL', 'CONCURRENT_COUNT', 'AUTHENTICATION')
     CHATBOT_HEIGHT, LAYOUT, AVAIL_LLM_MODELS, AUTO_CLEAR_TXT = get_conf('CHATBOT_HEIGHT', 'LAYOUT', 'AVAIL_LLM_MODELS', 'AUTO_CLEAR_TXT')
     ENABLE_AUDIO, AUTO_CLEAR_TXT, PATH_LOGGING, AVAIL_THEMES, THEME = get_conf('ENABLE_AUDIO', 'AUTO_CLEAR_TXT', 'PATH_LOGGING', 'AVAIL_THEMES', 'THEME')
+    DARK_MODE, = get_conf('DARK_MODE')
 
     # 如果WEB_PORT是-1, 则随机选取WEB端口
     PORT = find_free_port() if WEB_PORT <= 0 else WEB_PORT
@@ -59,7 +61,7 @@ def main():
     cancel_handles = []
     with gr.Blocks(title="Mr.🆖 GPT 學術優化", theme=set_theme, analytics_enabled=False, css=advanced_css) as demo:
         gr.HTML(title_html)
-        secret_css, secret_font = gr.Textbox(visible=False), gr.Textbox(visible=False)
+        secret_css, dark_mode = gr.Textbox(visible=False), gr.Textbox(DARK_MODE, visible=False)
         cookies = gr.State(load_chat_cookies())
         with gr_L1():
             with gr_L2(scale=2, elem_id="gpt-chat"):
@@ -71,11 +73,11 @@ def main():
                     with gr.Row():
                         txt = gr.Textbox(show_label=False, placeholder="在此輸入您的問題...").style(container=False)
                     with gr.Row():
-                        submitBtn = gr.Button("提交", variant="primary")
+                        submitBtn = gr.Button("提交", elem_id="elem_submit", variant="primary")
                     with gr.Row():
-                        resetBtn = gr.Button("重置", variant="secondary"); resetBtn.style(size="sm")
-                        stopBtn = gr.Button("停止", variant="secondary"); stopBtn.style(size="sm")
-                        clearBtn = gr.Button("清除", variant="secondary", visible=False); clearBtn.style(size="sm")
+                        resetBtn = gr.Button("重置", elem_id="elem_reset", variant="secondary"); resetBtn.style(size="sm")
+                        stopBtn = gr.Button("停止", elem_id="elem_stop", variant="secondary"); stopBtn.style(size="sm")
+                        clearBtn = gr.Button("清除", elem_id="elem_clear", variant="secondary", visible=False); clearBtn.style(size="sm")
                     if ENABLE_AUDIO: 
                         with gr.Row():
                             audio_mic = gr.Audio(source="microphone", type="numpy", streaming=True, show_label=False).style(container=False)
@@ -86,7 +88,7 @@ def main():
                         for k in functional:
                             if ("Visible" in functional[k]) and (not functional[k]["Visible"]): continue
                             variant = functional[k]["Color"] if "Color" in functional[k] else "secondary"
-                            functional[k]["Button"] = gr.Button(k, variant=variant)
+                            functional[k]["Button"] = gr.Button(k, variant=variant, info_str=f'基础功能区: {k}')
                             functional[k]["Button"].style(size="sm")
                 with gr.Accordion("函數插件區", open=True, elem_id="plugin-panel") as area_crazy_fn:
                     with gr.Row():
@@ -99,7 +101,9 @@ def main():
                             if not plugin.get("AsButton", True): continue
                             visible = True if match_group(plugin['Group'], DEFAULT_FN_GROUPS) else False
                             variant = plugins[k]["Color"] if "Color" in plugin else "secondary"
-                            plugin['Button'] = plugins[k]['Button'] = gr.Button(k, variant=variant, visible=visible).style(size="sm")
+                            info = plugins[k].get("Info", k)
+                            plugin['Button'] = plugins[k]['Button'] = gr.Button(k, variant=variant, 
+                                visible=visible, info_str=f'函数插件区: {info}').style(size="sm")
                     with gr.Row():
                         with gr.Accordion("更多函數插件", open=True):
                             dropdown_fn_list = []
@@ -116,15 +120,26 @@ def main():
                                 switchy_bt = gr.Button(r"請先從插件列表中選擇", variant="secondary").style(size="sm")
                     with gr.Row():
                         with gr.Accordion("點擊展開“文件上傳區”。上傳本地文件/壓縮包供函數插件調用。", open=False) as area_file_up:
-                            file_upload = gr.Files(label="任何文件，但推薦上傳壓縮文件(zip, tar)", file_count="multiple")
-                with gr.Accordion("更換模型 & System Prompt & 交互界面佈局", open=(LAYOUT == "TOP-DOWN"), elem_id="interact-panel"):
-                    system_prompt = gr.Textbox(show_label=True, placeholder=f"System Prompt", label="System prompt", value=initial_prompt)
+                            file_upload = gr.Files(label="任何文件，推薦上傳壓縮文件(zip, tar)", file_count="multiple", elem_id="elem_upload")
+
+
+        with gr.Floating(init_x="0%", init_y="0%", visible=True, width=None, drag="forbidden"):
+            with gr.Row():
+                with gr.Tab("上傳文件", elem_id="interact-panel"):
+                    gr.Markdown("請上傳本機檔案/壓縮包供「函數外掛區」功能呼叫。請注意: 上傳檔案後會自動把輸入區修改為對應路徑。")
+                    file_upload_2 = gr.Files(label="任何文件，推薦上傳壓縮文件(zip, tar)", file_count="multiple")
+    
+                with gr.Tab("更換模型 & Prompt", elem_id="interact-panel"):
+                    md_dropdown = gr.Dropdown(AVAIL_LLM_MODELS, value=LLM_MODEL, label="更換AI/LLM模型").style(container=False)
                     top_p = gr.Slider(minimum=-0, maximum=1.0, value=1.0, step=0.01,interactive=True, label="Top-p (nucleus sampling)",)
                     temperature = gr.Slider(minimum=-0, maximum=2.0, value=1.0, step=0.01, interactive=True, label="Temperature",)
-                    max_length_sl = gr.Slider(minimum=256, maximum=8192, value=4096, step=1, interactive=True, label="Local LLM MaxLength",)
-                    checkboxes = gr.CheckboxGroup(["基礎功能區", "函數插件區", "底部輸入區", "輸入清除鍵", "插件參數區"], value=["基礎功能區", "函數插件區"], label="顯示/隱藏功能區")
-                    md_dropdown = gr.Dropdown(AVAIL_LLM_MODELS, value=LLM_MODEL, label="更換AI/LLM模型").style(container=False)
+                    max_length_sl = gr.Slider(minimum=256, maximum=1024*32, value=4096, step=128, interactive=True, label="Local LLM MaxLength",)
+                    system_prompt = gr.Textbox(show_label=True, lines=2, placeholder=f"System Prompt", label="System prompt", value=initial_prompt)
+
+                with gr.Tab("介面外觀", elem_id="interact-panel"):
                     theme_dropdown = gr.Dropdown(AVAIL_THEMES, value=THEME, label="更換UI主題").style(container=False)
+                    checkboxes = gr.CheckboxGroup(["基礎功能區", "函數外掛區", "浮動輸入區", "輸入清除鍵", "外掛參數區"], 
+                                                  value=["基礎功能區", "函數外掛區"], label="顯示/隱藏功能區", elem_id='cbs').style(container=False)
                     dark_mode_btn = gr.Button("切換介面明暗 ☀", variant="secondary").style(size="sm")
                     dark_mode_btn.click(None, None, None, _js="""() => {
                             if (document.querySelectorAll('.dark').length) {
@@ -134,13 +149,17 @@ def main():
                             }
                         }""",
                     )
+                with gr.Tab("帮助", elem_id="interact-panel"):
                     gr.Markdown(description)
-                with gr.Accordion("備選輸入區", open=True, visible=False, elem_id="input-panel2") as area_input_secondary:
-                    with gr.Row():
-                        txt2 = gr.Textbox(show_label=False, placeholder="在此輸入您的問題...", label="輸入區2").style(container=False)
-                    with gr.Row():
-                        submitBtn2 = gr.Button("提交", variant="primary")
-                    with gr.Row():
+
+        with gr.Floating(init_x="20%", init_y="50%", visible=False, width="40%", drag="top") as area_input_secondary:
+            with gr.Accordion("浮動輸入區", open=True, elem_id="input-panel2"):
+                with gr.Row() as row:
+                    row.style(equal_height=True)
+                    with gr.Column(scale=10):
+                        txt2 = gr.Textbox(show_label=False, placeholder="Input question here.", lines=8, label="輸入區2").style(container=False)
+                    with gr.Column(scale=1, min_width=40):
+                        submitBtn2 = gr.Button("提交", variant="primary"); submitBtn2.style(size="sm")
                         resetBtn2 = gr.Button("重置", variant="secondary"); resetBtn2.style(size="sm")
                         stopBtn2 = gr.Button("停止", variant="secondary"); stopBtn2.style(size="sm")
                         clearBtn2 = gr.Button("清除", variant="secondary", visible=False); clearBtn2.style(size="sm")
@@ -150,12 +169,12 @@ def main():
             ret = {}
             ret.update({area_basic_fn: gr.update(visible=("基礎功能區" in a))})
             ret.update({area_crazy_fn: gr.update(visible=("函數插件區" in a))})
-            ret.update({area_input_primary: gr.update(visible=("底部輸入區" not in a))})
-            ret.update({area_input_secondary: gr.update(visible=("底部輸入區" in a))})
+            ret.update({area_input_primary: gr.update(visible=("浮動輸入區" not in a))})
+            ret.update({area_input_secondary: gr.update(visible=("浮動輸入區" in a))})
             ret.update({clearBtn: gr.update(visible=("輸入清除鍵" in a))})
             ret.update({clearBtn2: gr.update(visible=("輸入清除鍵" in a))})
             ret.update({plugin_advanced_arg: gr.update(visible=("插件參數區" in a))})
-            if "底部輸入區" in a: ret.update({txt: gr.update(value="")})
+            if "浮動輸入區" in a: ret.update({txt: gr.update(value="")})
             return ret
         checkboxes.select(fn_area_visibility, [checkboxes], [area_basic_fn, area_crazy_fn, area_input_primary, area_input_secondary, txt, txt2, clearBtn, clearBtn2, plugin_advanced_arg] )
         # 整理反复出现的控件句柄组合
@@ -183,6 +202,7 @@ def main():
             cancel_handles.append(click_handle)
         # 文件上传区，接收文件后与chatbot的互动
         file_upload.upload(on_file_uploaded, [file_upload, chatbot, txt, txt2, checkboxes, cookies], [chatbot, txt, txt2, cookies])
+        file_upload_2.upload(on_file_uploaded, [file_upload_2, chatbot, txt, txt2, checkboxes, cookies], [chatbot, txt, txt2, cookies])
         # 函数插件-固定按钮区
         for k in plugins:
             if not plugins[k].get("AsButton", True): continue
@@ -192,7 +212,8 @@ def main():
         # 函数插件-下拉菜单与随变按钮的互动
         def on_dropdown_changed(k):
             variant = plugins[k]["Color"] if "Color" in plugins[k] else "secondary"
-            ret = {switchy_bt: gr.update(value=k, variant=variant)}
+            info = plugins[k].get("Info", k)
+            ret = {switchy_bt: gr.update(value=k, variant=variant, info_str=f'函數插件區: {info}')}
             if plugins[k].get("AdvancedArgs", False): # 是否唤起高级插件参数区
                 ret.update({plugin_advanced_arg: gr.update(visible=True,  label=f"插件[{k}]的高級參數說明：" + plugins[k].get("ArgsReminder", [f"沒有提供高級參數功能說明"]))})
             else:
@@ -265,19 +286,30 @@ def main():
             cookies.update({'uuid': uuid.uuid4()})
             return cookies
         demo.load(init_cookie, inputs=[cookies, chatbot], outputs=[cookies])
-        demo.load(lambda: 0, inputs=None, outputs=None, _js='()=>{GptAcademicJavaScriptInit();}')
+        darkmode_js = """(dark) => {
+            dark = dark == "True";
+            if (document.querySelectorAll('.dark').length) {
+                if (!dark){
+                    document.querySelectorAll('.dark').forEach(el => el.classList.remove('dark'));
+                }
+            } else {
+                if (dark){
+                    document.querySelector('body').classList.add('dark');
+                }
+            }
+        }"""
+        demo.load(None, inputs=[dark_mode], outputs=None, _js=darkmode_js)    # 配置暗色主题或亮色主题
+        demo.load(None, inputs=[gr.Textbox(LAYOUT, visible=False)], outputs=None, _js='(LAYOUT)=>{GptAcademicJavaScriptInit(LAYOUT);}')
         
     # gradio的inbrowser触发不太稳定，回滚代码到原始的浏览器打开函数
     def auto_opentab_delay():
         import threading, webbrowser, time
         print(f"如果瀏覽器沒有自動打開，請複制並轉到以下URL：")
-        print(f"\t（亮色主題）: http://localhost:{PORT}")
-        print(f"\t（暗色主題）: http://localhost:{PORT}/?__theme=dark")
+        if DARK_MODE:   print(f"\t「暗色主題已啟用（支援動態切換主題）」: http://localhost:{PORT}")
+        else:           print(f"\t「亮色主題已啟用（支援動態切換主題）」: http://localhost:{PORT}")
         def open():
             time.sleep(2)       # 打开浏览器
-            DARK_MODE, = get_conf('DARK_MODE')
-            if DARK_MODE: webbrowser.open_new_tab(f"http://localhost:{PORT}/?__theme=dark")
-            else: webbrowser.open_new_tab(f"http://localhost:{PORT}")
+            webbrowser.open_new_tab(f"http://localhost:{PORT}")
         threading.Thread(target=open, name="open-browser", daemon=True).start()
         threading.Thread(target=auto_update, name="self-upgrade", daemon=True).start()
         threading.Thread(target=warm_up_modules, name="warm-up", daemon=True).start()
