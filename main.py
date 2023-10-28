@@ -14,13 +14,13 @@ def main():
     CHATBOT_HEIGHT, LAYOUT, AVAIL_LLM_MODELS, AUTO_CLEAR_TXT = get_conf('CHATBOT_HEIGHT', 'LAYOUT', 'AVAIL_LLM_MODELS', 'AUTO_CLEAR_TXT')
     ENABLE_AUDIO, AUTO_CLEAR_TXT, PATH_LOGGING, AVAIL_THEMES, THEME = get_conf('ENABLE_AUDIO', 'AUTO_CLEAR_TXT', 'PATH_LOGGING', 'AVAIL_THEMES', 'THEME')
     DARK_MODE, NUM_CUSTOM_BASIC_BTN, SSL_KEYFILE, SSL_CERTFILE = get_conf('DARK_MODE', 'NUM_CUSTOM_BASIC_BTN', 'SSL_KEYFILE', 'SSL_CERTFILE')
+    INIT_SYS_PROMPT, = get_conf('INIT_SYS_PROMPT')
 
     # 如果WEB_PORT是-1, 则随机选取WEB端口
     PORT = find_free_port() if WEB_PORT <= 0 else WEB_PORT
     from check_proxy import get_current_version
     from themes.theme import adjust_theme, advanced_css, theme_declaration, load_dynamic_theme
 
-    initial_prompt = "Serve me as a writing and programming assistant."
     title_html = f"<h1 align=\"center\">Mr.🆖 GPT 學術優化 {get_current_version()}</h1>{theme_declaration}"
     description =  ""
 
@@ -144,7 +144,7 @@ def main():
                     top_p = gr.Slider(minimum=-0, maximum=1.0, value=1.0, step=0.01,interactive=True, label="Top-p (nucleus sampling)",)
                     temperature = gr.Slider(minimum=-0, maximum=2.0, value=1.0, step=0.01, interactive=True, label="Temperature",)
                     max_length_sl = gr.Slider(minimum=256, maximum=1024*32, value=4096, step=128, interactive=True, label="Local LLM MaxLength",)
-                    system_prompt = gr.Textbox(show_label=True, lines=2, placeholder=f"System Prompt", label="System prompt", value=initial_prompt)
+                    system_prompt = gr.Textbox(show_label=True, lines=2, placeholder=f"System Prompt", label="System prompt", value=INIT_SYS_PROMPT)
 
                 with gr.Tab("介面外觀", elem_id="interact-panel"):
                     theme_dropdown = gr.Dropdown(AVAIL_THEMES, value=THEME, label="更換UI主題").style(container=False)
