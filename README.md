@@ -1,8 +1,11 @@
 > **Note**
->
+> 
 > 2023.10.28: 紧急修复了若干问题，安装依赖时，请选择`requirements.txt`中**指定的版本**。
->
+> 
 > `pip install -r requirements.txt`
+>
+> 2023.11.7: 本项目开源免费，近期发现有人蔑视开源协议并利用本项目违规圈钱，请提高警惕，谨防上当受骗。
+
 
 
 # <div align=center><img src="docs/logo.png" width="40"> GPT 学术优化 (GPT Academic)</div>
@@ -126,11 +129,11 @@ python -m pip install -r requirements.txt # 这个步骤和pip安装一样的步
 【可选步骤】如果需要支持清华ChatGLM2/复旦MOSS作为后端，需要额外安装更多依赖（前提条件：熟悉Python + 用过Pytorch + 电脑配置够强）：
 ```sh
 # 【可选步骤I】支持清华ChatGLM2。清华ChatGLM备注：如果遇到"Call ChatGLM fail 不能正常加载ChatGLM的参数" 错误，参考如下： 1：以上默认安装的为torch+cpu版，使用cuda需要卸载torch重新安装torch+cuda； 2：如因本机配置不够无法加载模型，可以修改request_llm/bridge_chatglm.py中的模型精度, 将 AutoTokenizer.from_pretrained("THUDM/chatglm-6b", trust_remote_code=True) 都修改为 AutoTokenizer.from_pretrained("THUDM/chatglm-6b-int4", trust_remote_code=True)
-python -m pip install -r request_llm/requirements_chatglm.txt  
+python -m pip install -r request_llms/requirements_chatglm.txt  
 
 # 【可选步骤II】支持复旦MOSS
-python -m pip install -r request_llm/requirements_moss.txt
-git clone --depth=1 https://github.com/OpenLMLab/MOSS.git request_llm/moss  # 注意执行此行代码时，必须处于项目根路径
+python -m pip install -r request_llms/requirements_moss.txt
+git clone --depth=1 https://github.com/OpenLMLab/MOSS.git request_llms/moss  # 注意执行此行代码时，必须处于项目根路径
 
 # 【可选步骤III】支持RWKV Runner
 参考wiki：https://github.com/binary-husky/gpt_academic/wiki/%E9%80%82%E9%85%8DRWKV-Runner
@@ -285,7 +288,8 @@ Tip：不指定文件直接点击 `载入对话历史存档` 可以查看历史h
 
 
 ### II：版本:
-- version 3.60（todo）: 优化虚空终端，引入code interpreter和更多插件
+- version 3.60（todo）: 优化虚空终端，并引入AutoGen作为新一代插件的基石
+- version 3.57: 支持GLM3，星火v3，文心一言v4，修复本地模型的并发BUG
 - version 3.56: 支持动态追加基础功能按钮，新汇报PDF汇总页面
 - version 3.55: 重构前端界面，引入悬浮窗口与菜单栏
 - version 3.54: 新增动态代码解释器（Code Interpreter）（待完善）
