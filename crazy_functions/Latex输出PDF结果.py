@@ -1,5 +1,5 @@
 from toolbox import update_ui, trimmed_format_exc, get_conf, get_log_folder, promote_file_to_downloadzone
-from toolbox import CatchException, report_execption, update_ui_lastest_msg, zip_result, gen_time_str
+from toolbox import CatchException, report_exception, update_ui_lastest_msg, zip_result, gen_time_str
 from functools import partial
 import glob, os, requests, time
 pj = os.path.join

@@ -1,6 +1,6 @@
 from toolbox import update_ui, get_log_folder
 from toolbox import write_history_to_file, promote_file_to_downloadzone
-from toolbox import CatchException, report_execption, get_conf
+from toolbox import CatchException, report_exception, get_conf
 import re, requests, unicodedata, os
 from .crazy_utils import request_gpt_model_in_new_thread_with_ui_alive
 def download_arxiv_(url_pdf):

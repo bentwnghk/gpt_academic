@@ -158,7 +158,7 @@ def CatchException(f):
                 chatbot_with_cookie.clear()
                 chatbot_with_cookie.append(["插件調度異常", "異常原因"])
             chatbot_with_cookie[-1] = (chatbot_with_cookie[-1][0],
-                           f"[Local Message] 實驗性函數調用出錯: \n\n{tb_str} \n\n當前代理可用性: \n\n{check_proxy(proxies)}")
+                           f"[Local Message] 插件調用出錯: \n\n{tb_str} \n\n當前代理可用性: \n\n{check_proxy(proxies)}")
             yield from update_ui(chatbot=chatbot_with_cookie, history=history, msg=f'異常 {e}') # 刷新界面
     return decorated
 
@@ -187,7 +187,7 @@ def HotReload(f):
 其他小工具:
     - write_history_to_file:    将结果写入markdown文件中
     - regular_txt_to_markdown:  将普通文本转换为Markdown格式的文本。
-    - report_execption:         向chatbot中添加简单的意外错误信息
+    - report_exception:         向chatbot中添加简单的意外错误信息
     - text_divide_paragraph:    将文本按照段落分隔符分割开，生成带有段落标签的HTML代码。
     - markdown_convertion:      用多种方式组合，将markdown转化为好看的html
     - format_io:                接管gradio默认的markdown处理方式
@@ -260,7 +260,7 @@ def regular_txt_to_markdown(text):
 
 
 
-def report_execption(chatbot, history, a, b):
+def report_exception(chatbot, history, a, b):
     """
     向chatbot中添加错误信息
     """
@@ -279,9 +279,12 @@ def text_divide_paragraph(text):
     
     if '```' in text:
         # careful input
-        return pre + text + suf
+        return text
+    elif '</div>' in text:
+        # careful input
+        return text
     else:
-        # wtf input
+        # whatever input
         lines = text.split("\n")
         for i, line in enumerate(lines):
             lines[i] = lines[i].replace(" ", "&nbsp;")
@@ -625,13 +628,14 @@ def on_file_uploaded(request: gradio.Request, files, chatbot, txt, txt2, checkbo
 
 
 def on_report_generated(cookies, files, chatbot):
-    from toolbox import find_recent_files
-    PATH_LOGGING = get_conf('PATH_LOGGING')
+    # from toolbox import find_recent_files
+    # PATH_LOGGING = get_conf('PATH_LOGGING')
     if 'files_to_promote' in cookies:
         report_files = cookies['files_to_promote']
         cookies.pop('files_to_promote')
     else:
-        report_files = find_recent_files(PATH_LOGGING)
+        report_files = []
+    #     report_files = find_recent_files(PATH_LOGGING)
     if len(report_files) == 0:
         return cookies, None, chatbot
     # files.extend(report_files)
@@ -804,6 +808,11 @@ def read_single_conf_with_lru_cache(arg):
             r = getattr(importlib.import_module('config'), arg)
 
     # 在读取API_KEY时，检查一下是不是忘了改config
+    if arg == 'API_URL_REDIRECT':
+        oai_rd = r.get("https://api.openai.com/v1/chat/completions", None) # API_URL_REDIRECT填写格式是错误的，请阅读`https://github.com/binary-husky/gpt_academic/wiki/项目配置说明`
+        if oai_rd and not oai_rd.endswith('/completions'):
+            print亮红( "\n\n[API_URL_REDIRECT] API_URL_REDIRECT填错了。请阅读`https://github.com/binary-husky/gpt_academic/wiki/项目配置说明`。如果您确信自己没填错，无视此消息即可。")
+            time.sleep(5)
     if arg == 'API_KEY':
         print亮蓝(f"[API_KEY] 本項目現已支持OpenAI和Azure的api-key。也支持同時填寫多個api-key，如API_KEY=\"openai-key1,openai-key2,azure-key3\"")
         print亮蓝(f"[API_KEY] 您既可以在config.py中修改api-key(s)，也可以在問題輸入區輸入臨時的api-key(s)，然後回車鍵提交後即可生效。")
@@ -1097,14 +1106,11 @@ def get_chat_handle():
 def get_plugin_default_kwargs():
     """
     """
-    from toolbox import get_conf, ChatBotWithCookies
-
-    WEB_PORT, LLM_MODEL, API_KEY = \
-        get_conf('WEB_PORT', 'LLM_MODEL', 'API_KEY')
-
+    from toolbox import ChatBotWithCookies
+    cookies = load_chat_cookies()
     llm_kwargs = {
-        'api_key': API_KEY,
-        'llm_model': LLM_MODEL,
+        'api_key': cookies['api_key'],
+        'llm_model': cookies['llm_model'],
         'top_p':1.0, 
         'max_length': None,
         'temperature':1.0,
@@ -1119,25 +1125,21 @@ def get_plugin_default_kwargs():
         "chatbot_with_cookie": chatbot,
         "history": [],
         "system_prompt": "You are a good AI.", 
-        "web_port": WEB_PORT
+        "web_port": None
     }
     return DEFAULT_FN_GROUPS_kwargs
 
 def get_chat_default_kwargs():
     """
     """
-    from toolbox import get_conf
-
-    LLM_MODEL, API_KEY = get_conf('LLM_MODEL', 'API_KEY')
-
+    cookies = load_chat_cookies()
     llm_kwargs = {
-        'api_key': API_KEY,
-        'llm_model': LLM_MODEL,
+        'api_key': cookies['api_key'],
+        'llm_model': cookies['llm_model'],
         'top_p':1.0, 
         'max_length': None,
         'temperature':1.0,
     }
-
     default_chat_kwargs = {
         "inputs": "Hello there, are you ready?",
         "llm_kwargs": llm_kwargs,
@@ -1149,3 +1151,12 @@ def get_chat_default_kwargs():
 
     return default_chat_kwargs
 
+def get_max_token(llm_kwargs):
+    from request_llms.bridge_all import model_info
+    return model_info[llm_kwargs['llm_model']]['max_token']
+
+def check_packages(packages=[]):
+    import importlib.util
+    for p in packages:
+        spam_spec = importlib.util.find_spec(p)
+        if spam_spec is None: raise ModuleNotFoundError

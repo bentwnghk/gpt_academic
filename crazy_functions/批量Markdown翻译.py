@@ -1,6 +1,6 @@
 import glob, time, os, re, logging
 from toolbox import update_ui, trimmed_format_exc, gen_time_str, disable_auto_promotion
-from toolbox import CatchException, report_execption, get_log_folder
+from toolbox import CatchException, report_exception, get_log_folder
 from toolbox import write_history_to_file, promote_file_to_downloadzone
 fast_debug = False
 

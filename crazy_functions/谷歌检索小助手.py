@@ -1,5 +1,5 @@
 from .crazy_utils import request_gpt_model_in_new_thread_with_ui_alive
-from toolbox import CatchException, report_execption, promote_file_to_downloadzone
+from toolbox import CatchException, report_exception, promote_file_to_downloadzone
 from toolbox import update_ui, update_ui_lastest_msg, disable_auto_promotion, write_history_to_file
 import logging
 import requests
@@ -29,7 +29,7 @@ def get_meta_information(url, chatbot, history):
     try:
         session.proxies.update(proxies)
     except:
-        report_execption(chatbot, history,
+        report_exception(chatbot, history,
                     a=f"获取代理失败 无代理状态下很可能无法访问OpenAI家族的模型及谷歌学术 建议：检查USE_PROXY选项是否修改。",
                     b=f"尝试直接连接")
         yield from update_ui(chatbot=chatbot, history=history)  # 刷新界面
