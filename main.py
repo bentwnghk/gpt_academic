@@ -75,7 +75,7 @@ def main():
             with gr_L2(scale=1, elem_id="gpt-panel"):
                 with gr.Accordion("輸入區", open=True, elem_id="input-panel") as area_input_primary:
                     with gr.Row():
-                        txt = gr.Textbox(show_label=False, placeholder="在此輸入您的問題...").style(container=False)
+                        txt = gr.Textbox(show_label=False, placeholder="Input question here.", elem_id='user_input_main').style(container=False)
                     with gr.Row():
                         submitBtn = gr.Button("提交", elem_id="elem_submit", variant="primary")
                     with gr.Row():
@@ -135,8 +135,8 @@ def main():
         with gr.Floating(init_x="0%", init_y="0%", visible=True, width=None, drag="forbidden"):
             with gr.Row():
                 with gr.Tab("上傳文件", elem_id="interact-panel"):
-                    gr.Markdown("請上傳本機檔案/壓縮包供「函數外掛區」功能呼叫。請注意: 上傳檔案後會自動把輸入區修改為對應路徑。")
-                    file_upload_2 = gr.Files(label="任何文件，推薦上傳壓縮文件(zip, tar)", file_count="multiple")
+                    gr.Markdown("請上傳本機檔案/壓縮包供“函數插件區”功能呼叫。請注意: 上傳檔案後會自動把輸入區修改為對應路徑。")
+                    file_upload_2 = gr.Files(label="任何文件，推薦上傳壓縮文件(zip, tar)", file_count="multiple", elem_id="elem_upload_float")
     
                 with gr.Tab("更換模型 & Prompt", elem_id="interact-panel"):
                     md_dropdown = gr.Dropdown(AVAIL_LLM_MODELS, value=LLM_MODEL, label="更換AI/LLM模型").style(container=False)
@@ -168,7 +168,8 @@ def main():
                 with gr.Row() as row:
                     row.style(equal_height=True)
                     with gr.Column(scale=10):
-                        txt2 = gr.Textbox(show_label=False, placeholder="Input question here.", lines=8, label="輸入區2").style(container=False)
+                        txt2 = gr.Textbox(show_label=False, placeholder="Input question here.",
+                                          elem_id='user_input_float', lines=8, label="輸入區2").style(container=False)
                     with gr.Column(scale=1, min_width=40):
                         submitBtn2 = gr.Button("提交", variant="primary"); submitBtn2.style(size="sm")
                         resetBtn2 = gr.Button("重置", variant="secondary"); resetBtn2.style(size="sm")
