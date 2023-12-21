@@ -1,9 +1,13 @@
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+//  第 1 部分: 工具函数
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
 function gradioApp() {
     // https://github.com/GaiZhenbiao/ChuanhuChatGPT/tree/main/web_assets/javascript
     const elems = document.getElementsByTagName('gradio-app');
     const elem = elems.length == 0 ? document : elems[0];
     if (elem !== document) {
-        elem.getElementById = function(id) {
+        elem.getElementById = function (id) {
             return document.getElementById(id);
         };
     }
@@ -12,31 +16,76 @@ function gradioApp() {
 
 function setCookie(name, value, days) {
     var expires = "";
-  
+
     if (days) {
-      var date = new Date();
-      date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
-      expires = "; expires=" + date.toUTCString();
+        var date = new Date();
+        date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+        expires = "; expires=" + date.toUTCString();
     }
-  
+
     document.cookie = name + "=" + value + expires + "; path=/";
 }
 
 function getCookie(name) {
     var decodedCookie = decodeURIComponent(document.cookie);
     var cookies = decodedCookie.split(';');
-  
+
     for (var i = 0; i < cookies.length; i++) {
-      var cookie = cookies[i].trim();
-  
-      if (cookie.indexOf(name + "=") === 0) {
-        return cookie.substring(name.length + 1, cookie.length);
-      }
+        var cookie = cookies[i].trim();
+
+        if (cookie.indexOf(name + "=") === 0) {
+            return cookie.substring(name.length + 1, cookie.length);
+        }
     }
-  
+
     return null;
-  }
-  
+}
+
+let toastCount = 0;
+function toast_push(msg, duration) {
+    duration = isNaN(duration) ? 3000 : duration;
+    const existingToasts = document.querySelectorAll('.toast');
+    existingToasts.forEach(toast => {
+        toast.style.top = `${parseInt(toast.style.top, 10) - 70}px`;
+    });
+    const m = document.createElement('div');
+    m.innerHTML = msg;
+    m.classList.add('toast');
+    m.style.cssText = `font-size: var(--text-md) !important; color: rgb(255, 255, 255); background-color: rgba(0, 0, 0, 0.6); padding: 10px 15px; border-radius: 4px; position: fixed; top: ${50 + toastCount * 70}%; left: 50%; transform: translateX(-50%); width: auto; text-align: center; transition: top 0.3s;`;
+    document.body.appendChild(m);
+    setTimeout(function () {
+        m.style.opacity = '0';
+        setTimeout(function () {
+            document.body.removeChild(m);
+            toastCount--;
+        }, 500);
+    }, duration);
+    toastCount++;
+}
+
+function toast_up(msg) {
+    var m = document.getElementById('toast_up');
+    if (m) {
+        document.body.removeChild(m); // remove the loader from the body
+    }
+    m = document.createElement('div');
+    m.id = 'toast_up';
+    m.innerHTML = msg;
+    m.style.cssText = "font-size: var(--text-md) !important; color: rgb(255, 255, 255); background-color: rgba(0, 0, 100, 0.6); padding: 10px 15px; margin: 0 0 0 -60px; border-radius: 4px; position: fixed; top: 50%; left: 50%; width: auto; text-align: center;";
+    document.body.appendChild(m);
+}
+function toast_down() {
+    var m = document.getElementById('toast_up');
+    if (m) {
+        document.body.removeChild(m); // remove the loader from the body
+    }
+}
+
+
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+//  第 2 部分: 复制按钮
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
 function addCopyButton(botElement) {
     // https://github.com/GaiZhenbiao/ChuanhuChatGPT/tree/main/web_assets/javascript
     // Copy bot button
@@ -49,7 +98,7 @@ function addCopyButton(botElement) {
         // messageBtnColumnElement.remove();
         return;
     }
-    
+
     var copyButton = document.createElement('button');
     copyButton.classList.add('copy-bot-btn');
     copyButton.setAttribute('aria-label', 'Copy');
@@ -98,40 +147,42 @@ function chatbotContentChanged(attempt = 1, force = false) {
     }
 }
 
-function chatbotAutoHeight(){
+
+
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+//  第 3 部分: chatbot动态高度调整
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+function chatbotAutoHeight() {
     // 自动调整高度
-    function update_height(){
+    function update_height() {
         var { panel_height_target, chatbot_height, chatbot } = get_elements(true);
-        if (panel_height_target!=chatbot_height)
-        {
+        if (panel_height_target != chatbot_height) {
             var pixelString = panel_height_target.toString() + 'px';
-            chatbot.style.maxHeight = pixelString; chatbot.style.height = pixelString; 
+            chatbot.style.maxHeight = pixelString; chatbot.style.height = pixelString;
         }
     }
 
-    function update_height_slow(){
+    function update_height_slow() {
         var { panel_height_target, chatbot_height, chatbot } = get_elements();
-        if (panel_height_target!=chatbot_height)
-        {
-            new_panel_height = (panel_height_target - chatbot_height)*0.5 + chatbot_height;
-            if (Math.abs(new_panel_height - panel_height_target) < 10){
+        if (panel_height_target != chatbot_height) {
+            new_panel_height = (panel_height_target - chatbot_height) * 0.5 + chatbot_height;
+            if (Math.abs(new_panel_height - panel_height_target) < 10) {
                 new_panel_height = panel_height_target;
             }
             // console.log(chatbot_height, panel_height_target, new_panel_height);
             var pixelString = new_panel_height.toString() + 'px';
-            chatbot.style.maxHeight = pixelString; chatbot.style.height = pixelString; 
+            chatbot.style.maxHeight = pixelString; chatbot.style.height = pixelString;
         }
     }
     monitoring_input_box()
     update_height();
-    setInterval(function() {
+    setInterval(function () {
         update_height_slow()
     }, 50); // 每100毫秒执行一次
 }
 
-
-
-function get_elements(consider_state_panel=false) {
+function get_elements(consider_state_panel = false) {
     var chatbot = document.querySelector('#gpt-chatbot > div.wrap.svelte-18telvq');
     if (!chatbot) {
         chatbot = document.querySelector('#gpt-chatbot');
@@ -142,19 +193,31 @@ function get_elements(consider_state_panel=false) {
     // const panel4 = document.querySelector('#interact-panel').getBoundingClientRect();
     const panel5 = document.querySelector('#input-panel2').getBoundingClientRect();
     const panel_active = document.querySelector('#state-panel').getBoundingClientRect();
-    if (consider_state_panel || panel_active.height < 25){
+    if (consider_state_panel || panel_active.height < 25) {
         document.state_panel_height = panel_active.height;
     }
     // 25 是chatbot的label高度, 16 是右侧的gap
-    var panel_height_target = panel1.height + panel2.height + panel3.height + 0 + 0 - 25 + 16*2;
+    var panel_height_target = panel1.height + panel2.height + panel3.height + 0 + 0 - 25 + 16 * 2;
     // 禁止动态的state-panel高度影响
-    panel_height_target = panel_height_target + (document.state_panel_height-panel_active.height)
+    panel_height_target = panel_height_target + (document.state_panel_height - panel_active.height)
     var panel_height_target = parseInt(panel_height_target);
     var chatbot_height = chatbot.style.height;
     var chatbot_height = parseInt(chatbot_height);
     return { panel_height_target, chatbot_height, chatbot };
 }
 
+
+
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+//  第 4 部分: 粘贴、拖拽文件上传
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+var elem_upload = null;
+var elem_upload_float = null;
+var elem_input_main = null;
+var elem_input_float = null;
+var elem_chatbot = null;
+var exist_file_msg = '⚠️请先删除上传区（左上方）中的历史文件，再尝试上传。'
 
 function add_func_paste(input) {
     let paste_files = [];
@@ -173,7 +236,7 @@ function add_func_paste(input) {
                 }
                 if (paste_files.length > 0) {
                     // 按照文件列表执行批量上传逻辑
-                    await paste_upload_files(paste_files);
+                    await upload_files(paste_files);
                     paste_files = []
 
                 }
@@ -182,8 +245,43 @@ function add_func_paste(input) {
     }
 }
 
+function add_func_drag(elem) {
+    if (elem) {
+        const dragEvents = ["dragover"];
+        const leaveEvents = ["dragleave", "dragend", "drop"];
 
-async function paste_upload_files(files) {
+        const onDrag = function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            if (elem_upload_float.querySelector("input[type=file]")) {
+                toast_up('⚠️释放以上传文件')
+            } else {
+                toast_up(exist_file_msg)
+            }
+        };
+
+        const onLeave = function (e) {
+            toast_down();
+            e.preventDefault();
+            e.stopPropagation();
+        };
+
+        dragEvents.forEach(event => {
+            elem.addEventListener(event, onDrag);
+        });
+
+        leaveEvents.forEach(event => {
+            elem.addEventListener(event, onLeave);
+        });
+
+        elem.addEventListener("drop", async function (e) {
+            const files = e.dataTransfer.files;
+            await upload_files(files);
+        });
+    }
+}
+
+async function upload_files(files) {
     const uploadInputElement = elem_upload_float.querySelector("input[type=file]");
     let totalSizeMb = 0
     if (files && files.length > 0) {
@@ -195,58 +293,100 @@ async function paste_upload_files(files) {
             }
             // 检查文件总大小是否超过20MB
             if (totalSizeMb > 20) {
-                toast_push('⚠️文件夹大于20MB 🚀上传文件中', 2000)
+                toast_push('⚠️文件夹大于 20MB 🚀上传文件中', 3000)
                 // return;  // 如果超过了指定大小, 可以不进行后续上传操作
             }
-             // 监听change事件， 原生Gradio可以实现
+            // 监听change事件， 原生Gradio可以实现
             // uploadInputElement.addEventListener('change', function(){replace_input_string()});
             let event = new Event("change");
-            Object.defineProperty(event, "target", {value: uploadInputElement, enumerable: true});
-            Object.defineProperty(event, "currentTarget", {value: uploadInputElement, enumerable: true});
-            Object.defineProperty(uploadInputElement, "files", {value: files, enumerable: true});
+            Object.defineProperty(event, "target", { value: uploadInputElement, enumerable: true });
+            Object.defineProperty(event, "currentTarget", { value: uploadInputElement, enumerable: true });
+            Object.defineProperty(uploadInputElement, "files", { value: files, enumerable: true });
             uploadInputElement.dispatchEvent(event);
-            // toast_push('🎉上传文件成功', 2000)
         } else {
-            toast_push('⚠️请先删除上传区中的历史文件，再尝试粘贴。', 2000)
+            toast_push(exist_file_msg, 3000)
         }
     }
 }
-//提示信息 封装
-function toast_push(msg, duration) {
-    duration = isNaN(duration) ? 3000 : duration;
-    const m = document.createElement('div');
-    m.innerHTML = msg;
-    m.style.cssText = "font-size:  var(--text-md) !important; color: rgb(255, 255, 255);background-color: rgba(0, 0, 0, 0.6);padding: 10px 15px;margin: 0 0 0 -60px;border-radius: 4px;position: fixed;    top: 50%;left: 50%;width: auto; text-align: center;";
-    document.body.appendChild(m);
-    setTimeout(function () {
-        var d = 0.5;
-        m.style.opacity = '0';
-        setTimeout(function () {
-            document.body.removeChild(m)
-        }, d * 1000);
-    }, duration);
+
+function begin_loading_status() {
+    // Create the loader div and add styling
+    var loader = document.createElement('div');
+    loader.id = 'Js_File_Loading';
+    loader.style.position = "absolute";
+    loader.style.top = "50%";
+    loader.style.left = "50%";
+    loader.style.width = "60px";
+    loader.style.height = "60px";
+    loader.style.border = "16px solid #f3f3f3";
+    loader.style.borderTop = "16px solid #3498db";
+    loader.style.borderRadius = "50%";
+    loader.style.animation = "spin 2s linear infinite";
+    loader.style.transform = "translate(-50%, -50%)";
+    document.body.appendChild(loader); // Add the loader to the body
+    // Set the CSS animation keyframes
+    var styleSheet = document.createElement('style');
+    // styleSheet.type = 'text/css';
+    styleSheet.id = 'Js_File_Loading_Style'
+    styleSheet.innerText = `
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }`;
+    document.head.appendChild(styleSheet);
 }
 
-var elem_upload = null;
-var elem_upload_float = null;
-var elem_input_main = null;
-var elem_input_float = null;
+function cancel_loading_status() {
+    var loadingElement = document.getElementById('Js_File_Loading');
+    if (loadingElement) {
+        document.body.removeChild(loadingElement); // remove the loader from the body
+    }
+    var loadingStyle = document.getElementById('Js_File_Loading_Style');
+    if (loadingStyle) {
+        document.head.removeChild(loadingStyle);
+    }
+    let clearButton = document.querySelectorAll('div[id*="elem_upload"] button[aria-label="Clear"]');
+    for (let button of clearButton) {
+        button.addEventListener('click', function () {
+            setTimeout(function () {
+                register_upload_event();
+            }, 50);
+        });
+    }
+}
 
+function register_upload_event() {
+    elem_upload_float = document.getElementById('elem_upload_float')
+    const upload_component = elem_upload_float.querySelector("input[type=file]");
+    if (upload_component) {
+        upload_component.addEventListener('change', function (event) {
+            toast_push('正在上传中，请稍等。', 2000);
+            begin_loading_status();
+        });
+    }
+}
 
 function monitoring_input_box() {
+    register_upload_event();
+
     elem_upload = document.getElementById('elem_upload')
     elem_upload_float = document.getElementById('elem_upload_float')
     elem_input_main = document.getElementById('user_input_main')
     elem_input_float = document.getElementById('user_input_float')
+    elem_chatbot = document.getElementById('gpt-chatbot')
+
     if (elem_input_main) {
         if (elem_input_main.querySelector("textarea")) {
             add_func_paste(elem_input_main.querySelector("textarea"))
         }
     }
     if (elem_input_float) {
-        if (elem_input_float.querySelector("textarea")){
+        if (elem_input_float.querySelector("textarea")) {
             add_func_paste(elem_input_float.querySelector("textarea"))
         }
+    }
+    if (elem_chatbot) {
+        add_func_drag(elem_chatbot)
     }
 }
 
@@ -257,15 +397,23 @@ window.addEventListener("DOMContentLoaded", function () {
     gradioApp().addEventListener("render", monitoring_input_box);
 });
 
+
+
+
+
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+//  第 5 部分: 音频按钮样式变化
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
 function audio_fn_init() {
     let audio_component = document.getElementById('elem_audio');
-    if (audio_component){
+    if (audio_component) {
         let buttonElement = audio_component.querySelector('button');
         let specificElement = audio_component.querySelector('.hide.sr-only');
         specificElement.remove();
 
         buttonElement.childNodes[1].nodeValue = '启动麦克风';
-        buttonElement.addEventListener('click', function(event) {
+        buttonElement.addEventListener('click', function (event) {
             event.stopPropagation();
             toast_push('您启动了麦克风!下一步请点击“实时语音对话”启动语音对话。');
         });
@@ -273,14 +421,14 @@ function audio_fn_init() {
         // 查找语音插件按钮
         let buttons = document.querySelectorAll('button');
         let audio_button = null;
-        for(let button of buttons){
-            if (button.textContent.includes('语音')){
+        for (let button of buttons) {
+            if (button.textContent.includes('语音')) {
                 audio_button = button;
                 break;
             }
         }
-        if (audio_button){
-            audio_button.addEventListener('click', function() {
+        if (audio_button) {
+            audio_button.addEventListener('click', function () {
                 toast_push('您点击了“实时语音对话”启动语音对话。');
             });
             let parent_element = audio_component.parentElement; // 将buttonElement移动到audio_button的内部
@@ -293,6 +441,13 @@ function audio_fn_init() {
     }
 }
 
+
+
+
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+//  第 6 部分: JS初始化函数
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
 function GptAcademicJavaScriptInit(LAYOUT = "LEFT-RIGHT") {
     audio_fn_init();
     chatbotIndicator = gradioApp().querySelector('#gpt-chatbot > div.wrap');
@@ -300,5 +455,5 @@ function GptAcademicJavaScriptInit(LAYOUT = "LEFT-RIGHT") {
         chatbotContentChanged(1);
     });
     chatbotObserver.observe(chatbotIndicator, { attributes: true, childList: true, subtree: true });
-    if (LAYOUT === "LEFT-RIGHT") {chatbotAutoHeight();}
+    if (LAYOUT === "LEFT-RIGHT") { chatbotAutoHeight(); }
 }
