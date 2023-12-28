@@ -156,21 +156,21 @@ function chatbotContentChanged(attempt = 1, force = false) {
 function chatbotAutoHeight() {
     // 自动调整高度
     function update_height() {
-        var { panel_height_target, chatbot_height, chatbot } = get_elements(true);
-        if (panel_height_target != chatbot_height) {
-            var pixelString = panel_height_target.toString() + 'px';
+        var { height_target, chatbot_height, chatbot } = get_elements(true);
+        if (height_target != chatbot_height) {
+            var pixelString = height_target.toString() + 'px';
             chatbot.style.maxHeight = pixelString; chatbot.style.height = pixelString;
         }
     }
 
     function update_height_slow() {
-        var { panel_height_target, chatbot_height, chatbot } = get_elements();
-        if (panel_height_target != chatbot_height) {
-            new_panel_height = (panel_height_target - chatbot_height) * 0.5 + chatbot_height;
-            if (Math.abs(new_panel_height - panel_height_target) < 10) {
-                new_panel_height = panel_height_target;
+        var { height_target, chatbot_height, chatbot } = get_elements();
+        if (height_target != chatbot_height) {
+            new_panel_height = (height_target - chatbot_height) * 0.5 + chatbot_height;
+            if (Math.abs(new_panel_height - height_target) < 10) {
+                new_panel_height = height_target;
             }
-            // console.log(chatbot_height, panel_height_target, new_panel_height);
+            // console.log(chatbot_height, height_target, new_panel_height);
             var pixelString = new_panel_height.toString() + 'px';
             chatbot.style.maxHeight = pixelString; chatbot.style.height = pixelString;
         }
@@ -179,7 +179,26 @@ function chatbotAutoHeight() {
     update_height();
     setInterval(function () {
         update_height_slow()
-    }, 50); // 每100毫秒执行一次
+    }, 50); // 每50毫秒执行一次
+}
+
+swapped = false;
+function swap_input_area() {
+    // Get the elements to be swapped
+    var element1 = document.querySelector("#input-panel");
+    var element2 = document.querySelector("#basic-panel");
+
+    // Get the parent of the elements
+    var parent = element1.parentNode;
+
+    // Get the next sibling of element2
+    var nextSibling = element2.nextSibling;
+
+    // Swap the elements
+    parent.insertBefore(element2, element1);
+    parent.insertBefore(element1, nextSibling);
+    if (swapped) {swapped = false;} 
+    else {swapped = true;}
 }
 
 function get_elements(consider_state_panel = false) {
@@ -191,19 +210,42 @@ function get_elements(consider_state_panel = false) {
     const panel2 = document.querySelector('#basic-panel').getBoundingClientRect()
     const panel3 = document.querySelector('#plugin-panel').getBoundingClientRect();
     // const panel4 = document.querySelector('#interact-panel').getBoundingClientRect();
-    const panel5 = document.querySelector('#input-panel2').getBoundingClientRect();
     const panel_active = document.querySelector('#state-panel').getBoundingClientRect();
     if (consider_state_panel || panel_active.height < 25) {
         document.state_panel_height = panel_active.height;
     }
     // 25 是chatbot的label高度, 16 是右侧的gap
-    var panel_height_target = panel1.height + panel2.height + panel3.height + 0 + 0 - 25 + 16 * 2;
+    var height_target = panel1.height + panel2.height + panel3.height + 0 + 0 - 25 + 16 * 2;
     // 禁止动态的state-panel高度影响
-    panel_height_target = panel_height_target + (document.state_panel_height - panel_active.height)
-    var panel_height_target = parseInt(panel_height_target);
+    height_target = height_target + (document.state_panel_height - panel_active.height)
+    var height_target = parseInt(height_target);
     var chatbot_height = chatbot.style.height;
+    // 交换输入区位置，使得输入区始终可用
+    if (!swapped){
+        if (panel1.top!=0 && panel1.top < 0){ swap_input_area(); }
+    }
+    else if (swapped){
+        if (panel2.top!=0 && panel2.top > 0){ swap_input_area(); }
+    }
+    // 调整高度
+    const err_tor = 5;
+    if (Math.abs(panel1.left - chatbot.getBoundingClientRect().left) < err_tor){
+        // 是否处于窄屏模式
+        height_target = window.innerHeight * 0.6;
+    }else{
+        // 调整高度
+        const chatbot_height_exceed = 15;
+        const chatbot_height_exceed_m = 10;
+        b_panel = Math.max(panel1.bottom, panel2.bottom, panel3.bottom)
+        if (b_panel >= window.innerHeight - chatbot_height_exceed) {
+            height_target = window.innerHeight - chatbot.getBoundingClientRect().top - chatbot_height_exceed_m;
+        }
+        else if (b_panel < window.innerHeight * 0.75) {
+            height_target = window.innerHeight * 0.8;
+        }
+    }
     var chatbot_height = parseInt(chatbot_height);
-    return { panel_height_target, chatbot_height, chatbot };
+    return { height_target, chatbot_height, chatbot };
 }
 
 
