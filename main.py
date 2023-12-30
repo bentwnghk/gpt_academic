@@ -143,7 +143,7 @@ def main():
                             file_upload = gr.Files(label="任何文件，推薦上傳壓縮文件(zip, tar)", file_count="multiple", elem_id="elem_upload")
 
 
-        with gr.Floating(init_x="0%", init_y="0%", visible=True, width=None, drag="forbidden"):
+        with gr.Floating(init_x="0%", init_y="0%", visible=True, width=None, drag="forbidden", elem_id="tooltip"):
             with gr.Row():
                 with gr.Tab("上傳文件", elem_id="interact-panel"):
                     gr.Markdown("請上傳本機檔案/壓縮包供“函數插件區”功能呼叫。請注意: 上傳檔案後會自動把輸入區修改為對應路徑。")
@@ -161,10 +161,9 @@ def main():
                     checkboxes = gr.CheckboxGroup(["基礎功能區", "函數插件區", "浮動輸入區", "輸入清除鍵", "插件參數區"], 
                                                   value=["基礎功能區", "函數插件區"], label="顯示/隱藏功能區", elem_id='cbs').style(container=False)
                     checkboxes_2 = gr.CheckboxGroup(["自訂選單"], 
-                                                  value=[], label="顯示/隱藏自訂選單", elem_id='cbs').style(container=False)
+                                                  value=[], label="顯示/隱藏自訂選單", elem_id='cbsc').style(container=False)
                     dark_mode_btn = gr.Button("切換介面明暗 ☀", variant="secondary").style(size="sm")
-                    dark_mode_btn.click(None, None, None, _js=js_code_for_toggle_darkmode,
-                    )
+                    dark_mode_btn.click(None, None, None, _js=js_code_for_toggle_darkmode)
                 with gr.Tab("幫助", elem_id="interact-panel"):
                     gr.Markdown(help_menu_description)
 
