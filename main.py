@@ -15,8 +15,8 @@ help_menu_description = \
 
 def main():
     import gradio as gr
-    if gr.__version__ not in ['3.32.6']: 
-        raise ModuleNotFoundError("使用專案內建Gradio取得最佳體驗! 請執行 `pip install -r requirements.txt` 指令安裝內建Gradio及其他依賴, 詳情請見requirements.txt.")
+    if gr.__version__ not in ['3.32.6', '3.32.7']: 
+        raise ModuleNotFoundError("使用项目内置Gradio获取最优体验! 请运行 `pip install -r requirements.txt` 指令安装内置Gradio及其他依赖, 详情信息见requirements.txt.")
     from request_llms.bridge_all import predict
     from toolbox import format_io, find_free_port, on_file_uploaded, on_report_generated, get_conf, ArgsGeneralWrapper, load_chat_cookies, DummyWith
     # 建议您复制一个config_private.py放自己的秘密, 如API和代理网址
@@ -139,7 +139,7 @@ def main():
                             with gr.Row():
                                 switchy_bt = gr.Button(r"請先從插件列表中選擇", variant="secondary").style(size="sm")
                     with gr.Row():
-                        with gr.Accordion("點擊展開“文件上傳區”。上傳本地文件/壓縮包供函數插件調用。", open=False) as area_file_up:
+                        with gr.Accordion("點擊展開“文件上傳區”。", open=False) as area_file_up:
                             file_upload = gr.Files(label="任何文件，推薦上傳壓縮文件(zip, tar)", file_count="multiple", elem_id="elem_upload")
 
 
