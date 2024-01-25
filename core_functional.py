@@ -3,30 +3,58 @@
 # 'stop' 颜色对应 theme.py 中的 color_er
 import importlib
 from toolbox import clear_line_break
-
+from textwrap import dedent
 
 def get_core_functions():
     return {
+
         "英語學術潤色": {
-            # 前缀，会被加在你的输入之前。例如，用来描述你的要求，例如翻译、解释代码、润色等等
-            "Prefix":   r"Below is a paragraph from an academic paper. Polish the writing to meet the academic style, " +
-                        r"improve the spelling, grammar, clarity, concision and overall readability. When necessary, rewrite the whole sentence. " +
+            # [1*] 前缀，会被加在你的输入之前。例如，用来描述你的要求，例如翻译、解释代码、润色等等
+            "Prefix":   r"Below is a paragraph from an academic paper. Polish the writing to meet the academic style, "
+                        r"improve the spelling, grammar, clarity, concision and overall readability. When necessary, rewrite the whole sentence. "
                         r"Firstly, you should provide the polished paragraph. "
                         r"Secondly, you should list all your modification and explain the reasons to do so in markdown table." + "\n\n",
-            # 后缀，会被加在你的输入之后。例如，配合前缀可以把你的输入内容用引号圈起来
+            # [2*] 后缀，会被加在你的输入之后。例如，配合前缀可以把你的输入内容用引号圈起来
             "Suffix":   r"",
-            # 按钮颜色 (默认 secondary)
+            # [3] 按钮颜色 (可选参数，默认 secondary)
             "Color":    r"secondary",
-            # 按钮是否可见 (默认 True，即可见)
+            # [4] 按钮是否可见 (可选参数，默认 True，即可见)
             "Visible": True,
-            # 是否在触发时清除历史 (默认 False，即不处理之前的对话历史)
-            "AutoClearHistory": False
+            # [5] 是否在触发时清除历史 (可选参数，默认 False，即不处理之前的对话历史)
+            "AutoClearHistory": False,
+            # [6] 文本预处理 （可选参数，默认 None，举例：写个函数移除所有的换行符）
+            "PreProcess": None,
         },
-        "中文學術潤色": {
-            "Prefix":   r"作為一名中文學術論文寫作改進助理，你的任務是改進所提供文本的拼寫、語法、清晰、簡潔和整體可讀性，" +
-                        r"同時分解長句，減少重複，並提供改進建議。請只提供文本的更正版本，避免包括解釋。請編輯以下文本" + "\n\n",
-            "Suffix":   r"",
+        
+        
+        "總結繪製腦圖": {
+            # 前缀，会被加在你的输入之前。例如，用来描述你的要求，例如翻译、解释代码、润色等等
+            "Prefix":   r"",
+            # 后缀，会被加在你的输入之后。例如，配合前缀可以把你的输入内容用引号圈起来
+            "Suffix":
+                dedent("\n"+r'''
+                    ==============================
+                    使用mermaid flowchart對上述文本進行總結，概括上述段落的內容以及內在邏輯關係，例如：
+
+                    以下是對以上文本的總結，以mermaid flowchart的形式展示：
+                    ```mermaid
+                    flowchart LR
+                        A["節點名1"] --> B("節點名2")
+                        B --> C{"節點名稱3"}
+                        C --> D["節點名4"]
+                        C --> |"箭頭名1"| E["節點名5"]
+                        C --> |"箭頭名2"| F["節點名6"]
+                    ```
+
+                    警告：
+                    （1）使用中文
+                    （2）節點名字使用引號包裹，如["Laptop"]
+                    （3）`|` 和 `"`之間不要存在空格
+                    （4）根據情況選擇flowchart LR（從左到右）或flowchart TD（從上到下）
+                '''),
         },
+        
+        
         "查找語法錯誤": {
             "Prefix":   r"Help me ensure that the grammar and the spelling is correct. "
                         r"Do not try to polish the text, if no mistake is found, tell me that this paragraph is good. "
@@ -46,10 +74,14 @@ def get_core_functions():
             "Suffix":   r"",
             "PreProcess": clear_line_break,    # 预处理：清除换行符
         },
+        
+        
         "中譯英": {
             "Prefix":   r"Please translate following sentence to English:" + "\n\n",
             "Suffix":   r"",
         },
+        
+        
         "學術中英互譯": {
             "Prefix":   r"I want you to act as a scientific English-Chinese translator, " +
                         r"I will provide you with some paragraphs in one language " +
@@ -59,14 +91,17 @@ def get_core_functions():
                         r"such as natural language processing, and rhetorical knowledge " +
                         r"and experience about effective writing techniques to reply. " +
                         r"I'll give you my paragraphs as follows, tell me what language it is written in, and then translate:" + "\n\n",
-            "Suffix": "",
-            "Color": "secondary",
-        },
-        "英譯中": {
-            "Prefix":   r"翻譯成地道的中文：" + "\n\n",
             "Suffix":   r"",
-            "Visible": False,
         },
+        
+        
+        "英譯中": {
+            "Prefix":   r"翻譯成道地的中文：" + "\n\n",
+            "Suffix":   r"",
+            "Visible":  False,
+        },
+
+
         "閱讀理解練習": {
             "Prefix":   r"I want you to act as a reading comprehension exercise generator. " +
                         r"Write a passage on my requested topic and formulate 8 MCQs to test students' understanding of the passage. " +
@@ -75,22 +110,28 @@ def get_core_functions():
                         r"Now, please start by asking me for a topic, the desired length of the passage, and the level of difficulty of the words to be used in the passage." + "\n\n",
             "Suffix":   r"",
         },
+
+        
         "找圖片": {
-            "Prefix":   r"我需要你找一張網絡圖片。使用Unsplash API(https://source.unsplash.com/960x640/?<英語關鍵詞>)獲取圖片URL，" +
-                        r"然後請使用Markdown格式封裝，並且不要有反斜線，不要用代碼塊。現在，請按以下描述給我發送圖片：" + "\n\n",
+            "Prefix":   r"我需要你找一張網路圖片。使用Unsplash API(https://source.unsplash.com/960x640/?<英文關鍵字>)取得圖片URL，"
+                        r"然後請使用Markdown格式封裝，並且不要有反斜線，不要使用程式碼區塊。現在，請按以下描述給我發送圖片：" + "\n\n",
             "Suffix":   r"",
-            "Visible": False,
+            "Visible":  False,
         },
+        
+        
         "解釋代碼": {
             "Prefix":   r"請解釋以下代碼：" + "\n```\n",
             "Suffix":   "\n```\n",
             "Visible": False,
         },
+        
+        
         "參考文獻轉Bib": {
-            "Prefix":   r"Here are some bibliography items, please transform them into bibtex style." +
-                        r"Note that, reference styles maybe more than one kind, you should transform each item correctly." +
-                        r"Items need to be transformed:",
-            "Visible": False,
+            "Prefix":   r"Here are some bibliography items, please transform them into bibtex style."
+                        r"Note that, reference styles maybe more than one kind, you should transform each item correctly."
+                        r"Items need to be transformed:" + "\n\n",
+            "Visible":  False,
             "Suffix":   r"",
         }
     }
@@ -107,8 +148,14 @@ def handle_core_functionality(additional_fn, inputs, history, chatbot):
         return inputs, history
     else:
         # 预制功能
-        if "PreProcess" in core_functional[additional_fn]: inputs = core_functional[additional_fn]["PreProcess"](inputs)  # 获取预处理函数（如果有的话）
+        if "PreProcess" in core_functional[additional_fn]:
+            if core_functional[additional_fn]["PreProcess"] is not None:
+                inputs = core_functional[additional_fn]["PreProcess"](inputs)  # 获取预处理函数（如果有的话）
         inputs = core_functional[additional_fn]["Prefix"] + inputs + core_functional[additional_fn]["Suffix"]
         if core_functional[additional_fn].get("AutoClearHistory", False):
             history = []
         return inputs, history
+
+if __name__ == "__main__":
+    t = get_core_functions()["總結繪製腦圖"]
+    print(t["Prefix"] + t["Suffix"])
