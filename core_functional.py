@@ -3,18 +3,27 @@
 # 'stop' 颜色对应 theme.py 中的 color_er
 import importlib
 from toolbox import clear_line_break
+from toolbox import apply_gpt_academic_string_mask_langbased
+from toolbox import build_gpt_academic_masked_string_langbased
 from textwrap import dedent
 
 def get_core_functions():
     return {
 
-        "英語學術潤色": {
-            # [1*] 前缀，会被加在你的输入之前。例如，用来描述你的要求，例如翻译、解释代码、润色等等
-            "Prefix":   r"Below is a paragraph from an academic paper. Polish the writing to meet the academic style, "
-                        r"improve the spelling, grammar, clarity, concision and overall readability. When necessary, rewrite the whole sentence. "
-                        r"Firstly, you should provide the polished paragraph. "
-                        r"Secondly, you should list all your modification and explain the reasons to do so in markdown table." + "\n\n",
-            # [2*] 后缀，会被加在你的输入之后。例如，配合前缀可以把你的输入内容用引号圈起来
+        "學術語料潤色": {
+            # [1*] 前缀字符串，会被加在你的输入之前。例如，用来描述你的要求，例如翻译、解释代码、润色等等。
+            #      这里填一个提示词字符串就行了，这里为了区分中英文情景搞复杂了一点
+            "Prefix":   build_gpt_academic_masked_string_langbased(
+                            text_show_english=
+                                r"Below is a paragraph from an academic paper. Polish the writing to meet the academic style, "
+                                r"improve the spelling, grammar, clarity, concision and overall readability. When necessary, rewrite the whole sentence. "
+                                r"Firstly, you should provide the polished paragraph. "
+                                r"Secondly, you should list all your modification and explain the reasons to do so in markdown table.",
+                            text_show_chinese=
+                                r"作為一名中文學術論文寫作改進助理，你的任務是改進所提供文本的拼寫、語法、清晰、簡潔和整體可讀性，"
+                                r"同時分解長句，減少重復，並提供改進建議。請先提供文本的更正版本，然后在markdown表格中列出修改的內容，並給出修改的理由："
+                        ) + "\n\n",
+            # [2*] 后缀字符串，会被加在你的输入之后。例如，配合前缀可以把你的输入内容用引号圈起来
             "Suffix":   r"",
             # [3] 按钮颜色 (可选参数，默认 secondary)
             "Color":    r"secondary",
@@ -32,9 +41,11 @@ def get_core_functions():
             "Prefix":   r"",
             # 后缀，会被加在你的输入之后。例如，配合前缀可以把你的输入内容用引号圈起来
             "Suffix":
+                # dedent() 函数用于去除多行字符串的缩进
                 dedent("\n"+r'''
                     ==============================
-                    使用mermaid flowchart對上述文本進行總結，概括上述段落的內容以及內在邏輯關係，例如：
+
+                    使用mermaid flowchart對以上文本進行總結，概括上述段落的內容以及內在邏輯關系，例如：
 
                     以下是對以上文本的總結，以mermaid flowchart的形式展示：
                     ```mermaid
@@ -82,15 +93,23 @@ def get_core_functions():
         },
         
         
-        "學術中英互譯": {
-            "Prefix":   r"I want you to act as a scientific English-Chinese translator, " +
-                        r"I will provide you with some paragraphs in one language " +
-                        r"and your task is to accurately and academically translate the paragraphs only into the other language. " +
-                        r"Do not repeat the original provided paragraphs after translation. " +
-                        r"You should use artificial intelligence tools, " +
-                        r"such as natural language processing, and rhetorical knowledge " +
-                        r"and experience about effective writing techniques to reply. " +
-                        r"I'll give you my paragraphs as follows, tell me what language it is written in, and then translate:" + "\n\n",
+        "學術英中互譯": {
+            "Prefix":   build_gpt_academic_masked_string_langbased(
+                            text_show_chinese=
+                                r"I want you to act as a scientific English-Chinese translator, "
+                                r"I will provide you with some paragraphs in one language "
+                                r"and your task is to accurately and academically translate the paragraphs only into the other language. "
+                                r"Do not repeat the original provided paragraphs after translation. "
+                                r"You should use artificial intelligence tools, "
+                                r"such as natural language processing, and rhetorical knowledge "
+                                r"and experience about effective writing techniques to reply. "
+                                r"I'll give you my paragraphs as follows, tell me what language it is written in, and then translate:",
+                            text_show_english=
+                                r"你是經驗豐富的翻譯，請把以下學術文章段落翻譯成中文，"
+                                r"並同時充分考慮中文的語法、清晰、簡潔和整體可讀性，"
+                                r"必要時，你可以修改整個句子的順序以確保翻譯后的段落符合中文的語言習慣。"
+                                r"你需要翻譯的文本如下："
+                        ) + "\n\n",
             "Suffix":   r"",
         },
         
@@ -151,7 +170,11 @@ def handle_core_functionality(additional_fn, inputs, history, chatbot):
         if "PreProcess" in core_functional[additional_fn]:
             if core_functional[additional_fn]["PreProcess"] is not None:
                 inputs = core_functional[additional_fn]["PreProcess"](inputs)  # 获取预处理函数（如果有的话）
-        inputs = core_functional[additional_fn]["Prefix"] + inputs + core_functional[additional_fn]["Suffix"]
+        # 为字符串加上上面定义的前缀和后缀。
+        inputs = apply_gpt_academic_string_mask_langbased(
+            string = core_functional[additional_fn]["Prefix"] + inputs + core_functional[additional_fn]["Suffix"],
+            lang_reference = inputs,
+        )
         if core_functional[additional_fn].get("AutoClearHistory", False):
             history = []
         return inputs, history

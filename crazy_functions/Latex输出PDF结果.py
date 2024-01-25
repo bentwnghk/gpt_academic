@@ -1,7 +1,7 @@
 from toolbox import update_ui, trimmed_format_exc, get_conf, get_log_folder, promote_file_to_downloadzone
 from toolbox import CatchException, report_exception, update_ui_lastest_msg, zip_result, gen_time_str
 from functools import partial
-import glob, os, requests, time
+import glob, os, requests, time, tarfile
 pj = os.path.join
 ARXIV_CACHE_DIR = os.path.expanduser(f"~/arxiv_cache/")
 
@@ -104,7 +104,7 @@ def arxiv_download(chatbot, history, txt, allow_cache=True):
     if ('.' in txt) and ('/' not in txt) and is_float(txt[:10]): # is arxiv ID
         txt = 'https://arxiv.org/abs/' + txt[:10]
     if not txt.startswith('https://arxiv.org'): 
-        return txt, None
+        return txt, None    # 是本地文件，跳过下载
     
     # <-------------- inspect format ------------->
     chatbot.append([f"檢測到arxiv文檔連接", '嘗試下載 ...']) 
@@ -146,7 +146,7 @@ def arxiv_download(chatbot, history, txt, allow_cache=True):
 
 
 @CatchException
-def Latex英文纠错加PDF对比(txt, llm_kwargs, plugin_kwargs, chatbot, history, system_prompt, web_port):
+def Latex英文纠错加PDF对比(txt, llm_kwargs, plugin_kwargs, chatbot, history, system_prompt, user_request):
     # <-------------- information about this plugin ------------->
     chatbot.append([ "函數插件功能？",
         "對整個Latex項目進行糾錯, 用latex編譯為PDF對修正處做高亮。函數插件貢獻者: Binary-Husky。注意事項: 目前僅支持GPT3.5/GPT4，其他模型轉化效果未知。目前對機器學習類文獻轉化效果最好，其他類型文獻轉化效果未知。僅在Windows系統進行了測試，其他操作系統表現未知。"])
@@ -221,7 +221,7 @@ def Latex英文纠错加PDF对比(txt, llm_kwargs, plugin_kwargs, chatbot, histo
 # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= 插件主程序2 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=    
 
 @CatchException
-def Latex翻译中文并重新编译PDF(txt, llm_kwargs, plugin_kwargs, chatbot, history, system_prompt, web_port):
+def Latex翻译中文并重新编译PDF(txt, llm_kwargs, plugin_kwargs, chatbot, history, system_prompt, user_request):
     # <-------------- information about this plugin ------------->
     chatbot.append([
         "函數插件功能？",
@@ -250,7 +250,14 @@ def Latex翻译中文并重新编译PDF(txt, llm_kwargs, plugin_kwargs, chatbot,
 
     # <-------------- clear history and read input ------------->
     history = []
-    txt, arxiv_id = yield from arxiv_download(chatbot, history, txt, allow_cache)
+    try:
+        txt, arxiv_id = yield from arxiv_download(chatbot, history, txt, allow_cache)
+    except tarfile.ReadError as e:
+        yield from update_ui_lastest_msg(
+            "无法自动下载该论文的Latex源码，请前往arxiv打开此论文下载页面，点other Formats，然后download source手动下载latex源码包。接下来调用本地Latex翻译插件即可。", 
+            chatbot=chatbot, history=history)
+        return
+
     if txt.endswith('.pdf'):
         report_execption(chatbot, history, a = f"解析項目: {txt}", b = f"發現已經存在翻譯好的PDF文檔")
         yield from update_ui(chatbot=chatbot, history=history) # 刷新界面

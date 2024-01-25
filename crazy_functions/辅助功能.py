@@ -11,7 +11,7 @@ import os
 
 
 @CatchException
-def 猜你想问(txt, llm_kwargs, plugin_kwargs, chatbot, history, system_prompt, web_port):
+def 猜你想问(txt, llm_kwargs, plugin_kwargs, chatbot, history, system_prompt, user_request):
     if txt:
         show_say = txt
         prompt = txt+'\n回答完問題後，再列出用戶可能提出的三個問題。'
@@ -32,7 +32,7 @@ def 猜你想问(txt, llm_kwargs, plugin_kwargs, chatbot, history, system_prompt
 
 
 @CatchException
-def 清除缓存(txt, llm_kwargs, plugin_kwargs, chatbot, history, system_prompt, web_port):
+def 清除缓存(txt, llm_kwargs, plugin_kwargs, chatbot, history, system_prompt, user_request):
     chatbot.append(['清除本地緩存數據', '執行中. 刪除數據'])
     yield from update_ui(chatbot=chatbot, history=history)  # 刷新界面
 

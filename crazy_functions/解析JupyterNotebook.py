@@ -109,7 +109,7 @@ def ipynb解释(file_manifest, project_folder, llm_kwargs, plugin_kwargs, chatbo
     yield from update_ui(chatbot=chatbot, history=history) # 刷新界面
 
 @CatchException
-def 解析ipynb文件(txt, llm_kwargs, plugin_kwargs, chatbot, history, system_prompt, web_port):
+def 解析ipynb文件(txt, llm_kwargs, plugin_kwargs, chatbot, history, system_prompt, user_request):
     chatbot.append([
         "函數插件功能？",
         "對IPynb文件進行解析。 Contributor: codycjy."])
