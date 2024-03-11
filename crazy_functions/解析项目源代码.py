@@ -86,9 +86,9 @@ def 解析源代码新(file_manifest, project_folder, llm_kwargs, plugin_kwargs,
         diagram_code = make_diagram(this_iteration_files, result, this_iteration_history_feed)
         summary = "請用一句話概括這些文件的整體功能。\n\n" + diagram_code
         summary_result = yield from request_gpt_model_in_new_thread_with_ui_alive(
-            inputs=summary, 
-            inputs_show_user=summary, 
-            llm_kwargs=llm_kwargs, 
+            inputs=summary,
+            inputs_show_user=summary,
+            llm_kwargs=llm_kwargs,
             chatbot=chatbot,
             history=[i_say, result],   # 迭代之前的分析
             sys_prompt="你是一個程序架構分析師，正在分析一個項目的源代碼。" + sys_prompt_additional)
@@ -345,9 +345,12 @@ def 解析任意code项目(txt, llm_kwargs, plugin_kwargs, chatbot, history, sys
     pattern_except_suffix = [_.lstrip(" ^*.,").rstrip(" ,") for _ in txt_pattern.split(" ") if _ != "" and _.strip().startswith("^*.")]
     pattern_except_suffix += ['zip', 'rar', '7z', 'tar', 'gz'] # 避免解析压缩文件
     # 将要忽略匹配的文件名(例如: ^README.md)
-    pattern_except_name = [_.lstrip(" ^*,").rstrip(" ,").replace(".", "\.") for _ in txt_pattern.split(" ") if _ != "" and _.strip().startswith("^") and not _.strip().startswith("^*.")]
+    pattern_except_name = [_.lstrip(" ^*,").rstrip(" ,").replace(".", r"\.") # 移除左边通配符，移除右侧逗号，转义点号
+                           for _ in txt_pattern.split(" ") # 以空格分割
+                           if (_ != "" and _.strip().startswith("^") and not _.strip().startswith("^*."))   # ^开始，但不是^*.开始
+                           ]
     # 生成正则表达式
-    pattern_except = '/[^/]+\.(' + "|".join(pattern_except_suffix) + ')$'
+    pattern_except = r'/[^/]+\.(' + "|".join(pattern_except_suffix) + ')$'
     pattern_except += '|/(' + "|".join(pattern_except_name) + ')$' if pattern_except_name != [] else ''
 
     history.clear()

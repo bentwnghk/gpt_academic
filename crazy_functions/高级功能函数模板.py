@@ -84,15 +84,15 @@ def 测试图表渲染(txt, llm_kwargs, plugin_kwargs, chatbot, history, system_
     history = []    # 清空历史，以免输入溢出
     chatbot.append(("这是什么功能？", "一个测试mermaid绘制图表的功能，您可以在输入框中输入一些关键词，然后使用mermaid+llm绘制图表。"))
     yield from update_ui(chatbot=chatbot, history=history) # 刷新界面 # 由于请求gpt需要一段时间，我们先及时地做一次界面更新
-    
+
     if txt == "": txt = "空白的输入栏" # 调皮一下
-    
+
     i_say_show_user = f'请绘制有关“{txt}”的逻辑关系图。'
     i_say = PROMPT.format(subject=txt)
     gpt_say = yield from request_gpt_model_in_new_thread_with_ui_alive(
         inputs=i_say,
         inputs_show_user=i_say_show_user,
-        llm_kwargs=llm_kwargs, chatbot=chatbot, history=[], 
+        llm_kwargs=llm_kwargs, chatbot=chatbot, history=[],
         sys_prompt=""
     )
     history.append(i_say); history.append(gpt_say)

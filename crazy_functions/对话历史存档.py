@@ -108,9 +108,9 @@ def 载入对话历史存档(txt, llm_kwargs, plugin_kwargs, chatbot, history, s
         if txt == "": txt = '空空如也的輸入欄'
         import glob
         local_history = "<br/>".join([
-            "`"+hide_cwd(f)+f" ({gen_file_preview(f)})"+"`" 
+            "`"+hide_cwd(f)+f" ({gen_file_preview(f)})"+"`"
             for f in glob.glob(
-                f'{get_log_folder(get_user(chatbot), plugin_name="chat_history")}/**/{f_prefix}*.html', 
+                f'{get_log_folder(get_user(chatbot), plugin_name="chat_history")}/**/{f_prefix}*.html',
                 recursive=True
             )])
         chatbot.append([f"正在查找對話歷史文件（html格式）: {txt}", f"找不到任何html文件: {txt}。但本地存儲了以下歷史文件，您可以將任意一個文件路徑粘貼到輸入區，然後重試：<br/>{local_history}"])
@@ -139,7 +139,7 @@ def 删除所有本地对话历史记录(txt, llm_kwargs, plugin_kwargs, chatbot
 
     import glob, os
     local_history = "<br/>".join([
-        "`"+hide_cwd(f)+"`" 
+        "`"+hide_cwd(f)+"`"
         for f in glob.glob(
             f'{get_log_folder(get_user(chatbot), plugin_name="chat_history")}/**/{f_prefix}*.html', recursive=True
         )])

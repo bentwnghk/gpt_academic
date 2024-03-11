@@ -33,7 +33,7 @@ explain_msg = """
     - 「请调用插件，解析python源代码项目，代码我刚刚打包拖到上传区了」
     - 「请问Transformer网络的结构是怎样的？」
 
-2. 您可以打开插件下拉菜单以了解本项目的各种能力。    
+2. 您可以打开插件下拉菜单以了解本项目的各种能力。
 
 3. 如果您使用「调用插件xxx」、「修改配置xxx」、「请问」等关键词，您的意图可以被识别的更准确。
 
@@ -67,7 +67,7 @@ class UserIntention(BaseModel):
 def chat(txt, llm_kwargs, plugin_kwargs, chatbot, history, system_prompt, user_intention):
     gpt_say = yield from request_gpt_model_in_new_thread_with_ui_alive(
         inputs=txt, inputs_show_user=txt,
-        llm_kwargs=llm_kwargs, chatbot=chatbot, history=[], 
+        llm_kwargs=llm_kwargs, chatbot=chatbot, history=[],
         sys_prompt=system_prompt
     )
     chatbot[-1] = [txt, gpt_say]
@@ -161,7 +161,7 @@ def 虚空终端主路由(txt, llm_kwargs, plugin_kwargs, chatbot, history, syst
         pass
 
     yield from update_ui_lastest_msg(
-        lastmsg=f"正在执行任务: {txt}\n\n用戶意圖理解: 意圖={explain_intention_to_user[user_intention.intention_type]}", 
+        lastmsg=f"正在執行任務: {txt}\n\n用戶意圖理解: 意圖={explain_intention_to_user[user_intention.intention_type]}", 
         chatbot=chatbot, history=history, delay=0)
 
     # 用户意图: 修改本项目的配置

@@ -85,10 +85,10 @@ def 解析Paper(file_manifest, project_folder, llm_kwargs, plugin_kwargs, chatbo
             msg = '正常'
             # ** gpt request **
             gpt_say = yield from request_gpt_model_in_new_thread_with_ui_alive(
-                inputs=i_say, 
-                inputs_show_user=i_say_show_user, 
+                inputs=i_say,
+                inputs_show_user=i_say_show_user,
                 llm_kwargs=llm_kwargs,
-                chatbot=chatbot, 
+                chatbot=chatbot,
                 history=[],
                 sys_prompt="總結文章。"
             )  # 带超时倒计时
@@ -106,10 +106,10 @@ def 解析Paper(file_manifest, project_folder, llm_kwargs, plugin_kwargs, chatbo
         msg = '正常'
         # ** gpt request **
         gpt_say = yield from request_gpt_model_in_new_thread_with_ui_alive(
-            inputs=i_say, 
-            inputs_show_user=i_say, 
+            inputs=i_say,
+            inputs_show_user=i_say,
             llm_kwargs=llm_kwargs,
-            chatbot=chatbot, 
+            chatbot=chatbot,
             history=history,
             sys_prompt="總結文章。"
         )  # 带超时倒计时

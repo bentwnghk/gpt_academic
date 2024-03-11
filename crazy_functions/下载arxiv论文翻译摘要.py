@@ -162,7 +162,7 @@ def 下载arxiv论文并翻译摘要(txt, llm_kwargs, plugin_kwargs, chatbot, hi
             b = f"下載pdf文件未成功")
         yield from update_ui(chatbot=chatbot, history=history) # 刷新界面
         return
-    
+
     # 翻译摘要等
     i_say =            f"請你閱讀以下學術論文相關的材料，提取摘要，翻譯為中文。材料如下：{str(info)}"
     i_say_show_user =  f'請你閱讀以下學術論文相關的材料，提取摘要，翻譯為中文。論文：{pdf_path}'

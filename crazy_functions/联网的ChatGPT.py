@@ -40,7 +40,7 @@ def scrape_text(url, proxies) -> str:
         'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.61 Safari/537.36',
         'Content-Type': 'text/plain',
     }
-    try: 
+    try:
         response = requests.get(url, headers=headers, proxies=proxies, timeout=8)
         if response.encoding == "ISO-8859-1": response.encoding = response.apparent_encoding
     except: 
@@ -91,8 +91,8 @@ def 连接网络回答问题(txt, llm_kwargs, plugin_kwargs, chatbot, history, s
     # ------------- < 第3步：ChatGPT综合 > -------------
     i_say = f"從以上搜索結果中抽取信息，然後回答問題：{txt}"
     i_say, history = input_clipping(    # 裁剪输入，从最长的条目开始裁剪，防止爆token
-        inputs=i_say, 
-        history=history, 
+        inputs=i_say,
+        history=history,
         max_token_limit=model_info[llm_kwargs['llm_model']]['max_token']*3//4
     )
     gpt_say = yield from request_gpt_model_in_new_thread_with_ui_alive(
