@@ -13,6 +13,17 @@ help_menu_description = \
 </br></br>如何语音对话: 请阅读Wiki
 </br></br>如何临时更换API_KEY: 在输入区输入临时API_KEY后提交（网页刷新后失效）"""
 
+def enable_log(PATH_LOGGING):
+    import logging, uuid
+    admin_log_path = os.path.join(PATH_LOGGING, "admin")
+    os.makedirs(admin_log_path, exist_ok=True)
+    log_dir = os.path.join(admin_log_path, "chat_secrets.log")
+    try:logging.basicConfig(filename=log_dir, level=logging.INFO, encoding="utf-8", format="%(asctime)s %(levelname)-8s %(message)s", datefmt="%Y-%m-%d %H:%M:%S")
+    except:logging.basicConfig(filename=log_dir, level=logging.INFO,  format="%(asctime)s %(levelname)-8s %(message)s", datefmt="%Y-%m-%d %H:%M:%S")
+    # Disable logging output from the 'httpx' logger
+    logging.getLogger("httpx").setLevel(logging.WARNING)
+    print(f"所有对话记录将自动保存在本地目录{log_dir}, 请注意自我隐私保护哦！")
+
 def main():
     import gradio as gr
     if gr.__version__ not in ['3.32.9']:
@@ -31,18 +42,11 @@ def main():
     from check_proxy import get_current_version
     from themes.theme import adjust_theme, advanced_css, theme_declaration, js_code_clear, js_code_reset, js_code_show_or_hide, js_code_show_or_hide_group2
     from themes.theme import js_code_for_css_changing, js_code_for_toggle_darkmode, js_code_for_persistent_cookie_init
-    from themes.theme import load_dynamic_theme, to_cookie_str, from_cookie_str, init_cookie
+    from themes.theme import load_dynamic_theme, to_cookie_str, from_cookie_str, assign_user_uuid
     title_html = f"<h1 align=\"center\">Mr.🆖 GPT 學術優化 {get_current_version()}</h1>{theme_declaration}"
-    
-    # 问询记录, python 版本建议3.9+（越新越好）
-    import logging, uuid
-    os.makedirs(PATH_LOGGING, exist_ok=True)
-    chat_secrets_log = os.path.join(PATH_LOGGING, "chat_secrets.log")
-    try:logging.basicConfig(filename=chat_secrets_log, level=logging.INFO, encoding="utf-8", format="%(asctime)s %(levelname)-8s %(message)s", datefmt="%Y-%m-%d %H:%M:%S")
-    except:logging.basicConfig(filename=chat_secrets_log, level=logging.INFO,  format="%(asctime)s %(levelname)-8s %(message)s", datefmt="%Y-%m-%d %H:%M:%S")
-    # Disable logging output from the 'httpx' logger
-    logging.getLogger("httpx").setLevel(logging.WARNING)
-    print(f"所有對話記錄將自動保存在本地目錄 {chat_secrets_log}, 請注意自我隱私保護哦！")
+
+    # 对话、日志记录
+    enable_log(PATH_LOGGING)
 
     # 一些普通功能模块
     from core_functional import get_core_functions
@@ -75,9 +79,9 @@ def main():
     cancel_handles = []
     customize_btns = {}
     predefined_btns = {}
-    with gr.Blocks(title="Mr.🆖 GPT 學術優化", theme=set_theme, analytics_enabled=False, css=advanced_css) as demo:
+    with gr.Blocks(title="Mr.🆖 GPT 學術優化", theme=set_theme, analytics_enabled=False, css=advanced_css) as app_block:
         gr.HTML(title_html)
-        secret_css, py_pickle_cookie = gr.Textbox(visible=False), gr.Textbox(visible=False)
+        secret_css, web_cookie_cache = gr.Textbox(visible=False), gr.Textbox(visible=False)
         cookies = gr.State(load_chat_cookies())
         with gr_L1():
             with gr_L2(scale=2, elem_id="gpt-chat"):
@@ -198,64 +202,19 @@ def main():
                     with gr.Column(scale=1, min_width=70):
                         basic_fn_confirm = gr.Button("确认并保存", variant="primary"); basic_fn_confirm.style(size="sm")
                         basic_fn_clean   = gr.Button("恢复默认", variant="primary"); basic_fn_clean.style(size="sm")
-                        def assign_btn(persistent_cookie_, cookies_, basic_btn_dropdown_, basic_fn_title, basic_fn_prefix, basic_fn_suffix, clean_up=False):
-                            ret = {}
-                            # 读取之前的自定义按钮
-                            customize_fn_overwrite_ = cookies_['customize_fn_overwrite']
-                            # 更新新的自定义按钮
-                            customize_fn_overwrite_.update({
-                                basic_btn_dropdown_:
-                                    {
-                                        "Title":basic_fn_title,
-                                        "Prefix":basic_fn_prefix,
-                                        "Suffix":basic_fn_suffix,
-                                    }
-                                }
-                            )
-                            if clean_up:
-                                customize_fn_overwrite_ = {}
-                            cookies_.update(customize_fn_overwrite_)    # 更新cookie
-                            visible = (not clean_up) and (basic_fn_title != "")
-                            if basic_btn_dropdown_ in customize_btns:
-                                # 是自定义按钮，不是预定义按钮
-                                ret.update({customize_btns[basic_btn_dropdown_]: gr.update(visible=visible, value=basic_fn_title)})
-                            else:
-                                # 是预定义按钮
-                                ret.update({predefined_btns[basic_btn_dropdown_]: gr.update(visible=visible, value=basic_fn_title)})
-                            ret.update({cookies: cookies_})
-                            try: persistent_cookie_ = from_cookie_str(persistent_cookie_)   # persistent cookie to dict
-                            except: persistent_cookie_ = {}
-                            persistent_cookie_["custom_bnt"] = customize_fn_overwrite_      # dict update new value
-                            persistent_cookie_ = to_cookie_str(persistent_cookie_)          # persistent cookie to dict
-                            ret.update({py_pickle_cookie: persistent_cookie_})             # write persistent cookie
-                            return ret
 
+                        from shared_utils.cookie_manager import assign_btn__fn_builder
+                        assign_btn = assign_btn__fn_builder(customize_btns, predefined_btns, cookies, web_cookie_cache)
                         # update btn
-                        h = basic_fn_confirm.click(assign_btn, [py_pickle_cookie, cookies, basic_btn_dropdown, basic_fn_title, basic_fn_prefix, basic_fn_suffix],
-                                                   [py_pickle_cookie, cookies, *customize_btns.values(), *predefined_btns.values()])
-                        h.then(None, [py_pickle_cookie], None, _js="""(py_pickle_cookie)=>{setCookie("py_pickle_cookie", py_pickle_cookie, 365);}""")
+                        h = basic_fn_confirm.click(assign_btn, [web_cookie_cache, cookies, basic_btn_dropdown, basic_fn_title, basic_fn_prefix, basic_fn_suffix],
+                                                   [web_cookie_cache, cookies, *customize_btns.values(), *predefined_btns.values()])
+                        h.then(None, [web_cookie_cache], None, _js="""(web_cookie_cache)=>{setCookie("web_cookie_cache", web_cookie_cache, 365);}""")
                         # clean up btn
-                        h2 = basic_fn_clean.click(assign_btn, [py_pickle_cookie, cookies, basic_btn_dropdown, basic_fn_title, basic_fn_prefix, basic_fn_suffix, gr.State(True)],
-                                                   [py_pickle_cookie, cookies, *customize_btns.values(), *predefined_btns.values()])
-                        h2.then(None, [py_pickle_cookie], None, _js="""(py_pickle_cookie)=>{setCookie("py_pickle_cookie", py_pickle_cookie, 365);}""")
+                        h2 = basic_fn_clean.click(assign_btn, [web_cookie_cache, cookies, basic_btn_dropdown, basic_fn_title, basic_fn_prefix, basic_fn_suffix, gr.State(True)],
+                                                   [web_cookie_cache, cookies, *customize_btns.values(), *predefined_btns.values()])
+                        h2.then(None, [web_cookie_cache], None, _js="""(web_cookie_cache)=>{setCookie("web_cookie_cache", web_cookie_cache, 365);}""")
 
-                        def persistent_cookie_reload(persistent_cookie_, cookies_):
-                            ret = {}
-                            for k in customize_btns:
-                                ret.update({customize_btns[k]: gr.update(visible=False, value="")})
 
-                            try: persistent_cookie_ = from_cookie_str(persistent_cookie_)    # persistent cookie to dict
-                            except: return ret
-
-                            customize_fn_overwrite_ = persistent_cookie_.get("custom_bnt", {})
-                            cookies_['customize_fn_overwrite'] = customize_fn_overwrite_
-                            ret.update({cookies: cookies_})
-
-                            for k,v in persistent_cookie_["custom_bnt"].items():
-                                if v['Title'] == "": continue
-                                if k in customize_btns: ret.update({customize_btns[k]: gr.update(visible=True, value=v['Title'])})
-                                else: ret.update({predefined_btns[k]: gr.update(visible=True, value=v['Title'])})
-                            return ret
 
         # 功能区显示开关与功能区的互动
         def fn_area_visibility(a):
@@ -375,11 +334,14 @@ def main():
             audio_mic.stream(deal_audio, inputs=[audio_mic, cookies])
 
 
-        demo.load(init_cookie, inputs=[cookies], outputs=[cookies])
-        demo.load(persistent_cookie_reload, inputs = [py_pickle_cookie, cookies],
-            outputs = [py_pickle_cookie, cookies, *customize_btns.values(), *predefined_btns.values()], _js=js_code_for_persistent_cookie_init)
-        demo.load(None, inputs=[], outputs=None, _js=f"""()=>init_frontend_with_cookies("{DARK_MODE}","{INIT_SYS_PROMPT}","{ADD_WAIFU}")""")    # 配置暗色主题或亮色主题
-        demo.load(None, inputs=[gr.Textbox(LAYOUT, visible=False)], outputs=None, _js='(LAYOUT)=>{GptAcademicJavaScriptInit(LAYOUT);}')
+        app_block.load(assign_user_uuid, inputs=[cookies], outputs=[cookies])
+
+        from shared_utils.cookie_manager import load_web_cookie_cache__fn_builder
+        load_web_cookie_cache = load_web_cookie_cache__fn_builder(customize_btns, cookies, predefined_btns)
+        app_block.load(load_web_cookie_cache, inputs = [web_cookie_cache, cookies],
+            outputs = [web_cookie_cache, cookies, *customize_btns.values(), *predefined_btns.values()], _js=js_code_for_persistent_cookie_init)
+
+        app_block.load(None, inputs=[], outputs=None, _js=f"""()=>GptAcademicJavaScriptInit("{DARK_MODE}","{INIT_SYS_PROMPT}","{ADD_WAIFU}","{LAYOUT}")""")    # 配置暗色主题或亮色主题
 
     # gradio的inbrowser触发不太稳定，回滚代码到原始的浏览器打开函数
     def run_delayed_tasks():
@@ -394,19 +356,15 @@ def main():
 
         threading.Thread(target=auto_updates, name="self-upgrade", daemon=True).start() # 查看自动更新
         threading.Thread(target=open_browser, name="open-browser", daemon=True).start() # 打开浏览器页面
-        threading.Thread(target=warm_up_mods, name="warm-up", daemon=True).start()      # 预热tiktoken模块
+        threading.Thread(target=warm_up_mods, name="warm-up",      daemon=True).start() # 预热tiktoken模块
 
+    # 运行一些异步任务：自动更新、打开浏览器页面、预热tiktoken模块
     run_delayed_tasks()
-    demo.queue(concurrency_count=CONCURRENT_COUNT).launch(
-        quiet=True,
-        server_name="0.0.0.0",
-        ssl_keyfile=None if SSL_KEYFILE == "" else SSL_KEYFILE,
-        ssl_certfile=None if SSL_CERTFILE == "" else SSL_CERTFILE,
-        ssl_verify=False,
-        server_port=PORT,
-        favicon_path=os.path.join(os.path.dirname(__file__), "docs/logo.png"),
-        auth=AUTHENTICATION if len(AUTHENTICATION) != 0 else None,
-        blocked_paths=["config.py","__pycache__","config_private.py","docker-compose.yml","Dockerfile",f"{PATH_LOGGING}/admin", chat_secrets_log])
+
+    # 最后，正式开始服务
+    from shared_utils.fastapi_server import start_app
+    start_app(app_block, CONCURRENT_COUNT, AUTHENTICATION, PORT, SSL_KEYFILE, SSL_CERTFILE)
+
 
 if __name__ == "__main__":
     main()
