@@ -11,10 +11,10 @@ def 解析Paper(file_manifest, project_folder, llm_kwargs, plugin_kwargs, chatbo
         with open(fp, 'r', encoding='utf-8', errors='replace') as f:
             file_content = f.read()
 
-        prefix = "接下來請你逐文件分析下面的論文文件，概括其內容" if index==0 else ""
-        i_say = prefix + f'請對下面的文章片段用繁體中文做一個概述，文件名是{os.path.relpath(fp, project_folder)}，文章内容是 ```{file_content}```'
-        i_say_show_user = prefix + f'[{index}/{len(file_manifest)}] 請對下面的文章片段做一個概述: {os.path.abspath(fp)}'
-        chatbot.append((i_say_show_user, "[Local Message] waiting for GPT response."))
+        prefix = "接下来请你逐文件分析下面的论文文件，概括其内容" if index==0 else ""
+        i_say = prefix + f'请对下面的文章片段用中文做一个概述，文件名是{os.path.relpath(fp, project_folder)}，文章内容是 ```{file_content}```'
+        i_say_show_user = prefix + f'[{index+1}/{len(file_manifest)}] 请对下面的文章片段做一个概述: {os.path.abspath(fp)}'
+        chatbot.append((i_say_show_user, "[Local Message] waiting gpt response."))
         yield from update_ui(chatbot=chatbot, history=history) # 刷新界面
 
         msg = '正常'
@@ -25,7 +25,7 @@ def 解析Paper(file_manifest, project_folder, llm_kwargs, plugin_kwargs, chatbo
         time.sleep(2)
 
     all_file = ', '.join([os.path.relpath(fp, project_folder) for index, fp in enumerate(file_manifest)])
-    i_say = f'根據以上你自己的分析，對全文進行概括，用學術性語言寫一段繁體中文摘要，然後再寫一段英文摘要（包括{all_file}）。'
+    i_say = f'根據以上你自己的分析，對全文進行概括，用學術性語言寫一段中文摘要，然後再寫一段英文摘要（包括{all_file}）。'
     chatbot.append((i_say, "[Local Message] waiting for GPT response."))
     yield from update_ui(chatbot=chatbot, history=history) # 刷新界面
 

@@ -11,9 +11,9 @@ def 生成函数注释(file_manifest, project_folder, llm_kwargs, plugin_kwargs,
         with open(fp, 'r', encoding='utf-8', errors='replace') as f:
             file_content = f.read()
 
-        i_say = f'請對下面的程序文件做一個概述，並對文件中的所有函數生成註釋，使用markdown表格輸出結果，文件名是{os.path.relpath(fp, project_folder)}，文件内容是 ```{file_content}```'
-        i_say_show_user = f'[{index}/{len(file_manifest)}] 請對下面的程序文件做一個概述，並對文件中的所有函數生成註釋: {os.path.abspath(fp)}'
-        chatbot.append((i_say_show_user, "[Local Message] waiting for GPT response."))
+        i_say = f'请对下面的程序文件做一个概述，并对文件中的所有函数生成注释，使用markdown表格输出结果，文件名是{os.path.relpath(fp, project_folder)}，文件内容是 ```{file_content}```'
+        i_say_show_user = f'[{index+1}/{len(file_manifest)}] 请对下面的程序文件做一个概述，并对文件中的所有函数生成注释: {os.path.abspath(fp)}'
+        chatbot.append((i_say_show_user, "[Local Message] waiting gpt response."))
         yield from update_ui(chatbot=chatbot, history=history) # 刷新界面
 
         if not fast_debug:

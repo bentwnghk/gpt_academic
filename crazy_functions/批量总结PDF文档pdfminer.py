@@ -75,10 +75,10 @@ def 解析Paper(file_manifest, project_folder, llm_kwargs, plugin_kwargs, chatbo
             file_content = readPdf(fp)
             file_content = BeautifulSoup(''.join(file_content), features="lxml").body.text.encode('gbk', 'ignore').decode('gbk')
 
-        prefix = "接下來請你逐文件分析下面的論文文件，概括其內容" if index==0 else ""
-        i_say = prefix + f'請對下面的文章片段用繁體中文做一個概述，文件名是{os.path.relpath(fp, project_folder)}，文章内容是 ```{file_content}```'
-        i_say_show_user = prefix + f'[{index}/{len(file_manifest)}] 請對下面的文章片段做一個概述: {os.path.abspath(fp)}'
-        chatbot.append((i_say_show_user, "[Local Message] waiting for GPT response."))
+        prefix = "接下来请你逐文件分析下面的论文文件，概括其内容" if index==0 else ""
+        i_say = prefix + f'请对下面的文章片段用中文做一个概述，文件名是{os.path.relpath(fp, project_folder)}，文章内容是 ```{file_content}```'
+        i_say_show_user = prefix + f'[{index+1}/{len(file_manifest)}] 请对下面的文章片段做一个概述: {os.path.abspath(fp)}'
+        chatbot.append((i_say_show_user, "[Local Message] waiting gpt response."))
         yield from update_ui(chatbot=chatbot, history=history) # 刷新界面
 
         if not fast_debug:
