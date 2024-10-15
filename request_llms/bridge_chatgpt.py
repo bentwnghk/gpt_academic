@@ -201,11 +201,14 @@ def predict_no_ui_long_connection(inputs:str, llm_kwargs:dict, history:list=[], 
                 if len(observe_window) >= 2:
                     if (time.time()-observe_window[1]) > watch_dog_patience:
                         raise RuntimeError("用户取消了程序。")
-        else: raise RuntimeError("意外Json結構："+delta)
-    if json_data and json_data['finish_reason'] == 'content_filter':
-        raise RuntimeError("由於提問含不合規內容被Azure過濾。")
-    if json_data and json_data['finish_reason'] == 'length':
-        raise ConnectionAbortedError("正常結束，但顯示Token不足，導致輸出不完整，請削減單次輸入的文本量。")
+        else: raise RuntimeError("意外Json结构："+delta)
+
+    finish_reason = json_data.get('finish_reason', None) if json_data else None
+    if finish_reason == 'content_filter':
+        raise RuntimeError("由于提问含不合规内容被过滤。")
+    if finish_reason == 'length':
+        raise ConnectionAbortedError("正常结束，但显示Token不足，导致输出不完整，请削减单次输入的文本量。")
+
     return result
 
 
@@ -535,5 +538,4 @@ def generate_payload(inputs:str, llm_kwargs:dict, history:list, system_prompt:st
     }
 
     return headers,payload
-
 
